@@ -24,7 +24,7 @@
           # Intentar 5 veces con 10 segundos entre intento
           for i in 1 2 3 4 5; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://miapp-dev.onrender.com/health)
+              https://edutrack-dev-server.onrender.com)
             if [[ $STATUS -eq 200 ]]; then
               echo "✅ Dev responde correctamente (HTTP $STATUS)"
               exit 0
