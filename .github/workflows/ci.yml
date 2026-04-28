@@ -2,39 +2,38 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [dev, main]   # Corre en ambas ramas
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
   test:
-    name: Tests + Seguridad
+    name: Tests + Análisis de Seguridad
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Descargar el código
       - name: Checkout código
         uses: actions/checkout@v4
 
+      # 2. Instalar Python
       - name: Configurar Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3. Instalar dependencias
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      # 4. Ejecutar tests
       - name: Ejecutar tests
         run: python manage.py test
 
+      # 5. Análisis SAST con Bandit
       - name: 🔒 Análisis de seguridad (Bandit)
         run: |
           pip install bandit
+          # -ll = reportar solo severidad MEDIA y ALTA
+          # -ii = reportar solo confianza MEDIA y ALTA
           bandit -r . -ll -ii --exclude ./tests,./venv
-
-  deploy-dev:
-    name: Deploy a Render Dev
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Deploy a Render Dev
-        run: curl -X POST "$https://api.render.com/deploy/srv-d7ok019o3t8c7381viog?key=0zuMNEbJcq8"
