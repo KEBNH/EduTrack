@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -37,3 +37,51 @@ jobs:
           # -ll = reportar solo severidad MEDIA y ALTA
           # -ii = reportar solo confianza MEDIA y ALTA
           bandit -r . -ll -ii --exclude ./tests,./venv
+
+  deploy-dev:
+    name: Deploy a Desarrollo
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+
+    steps:
+      - name: 🚀 Deploy a Dev (Render)
+        run: |
+          curl -X POST ${{ secrets.secrets.RENDER_DEV_HOOK }}
+          echo "Deploy a Dev disparado"
+
+      - name: ⏳ Esperar que Render inicie
+        run: sleep 30
+
+  smoke-test:
+    name: Smoke Test en Dev
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🩺 Verificar que Dev responde
+        run: |
+          # Intentar 5 veces con 10 segundos entre intento
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://edutrack-dev-server.onrender.com/health)
+            if [[ $STATUS -eq 200 ]]; then
+              echo "✅ Dev responde correctamente (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Intento $i fallido (HTTP $STATUS), reintentando..."
+            sleep 10
+          done
+          echo "❌ Dev no responde después de 5 intentos"
+          exit 1
+
+  deploy-prod:
+    name: Deploy a Producción
+    needs: smoke-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Deploy a Prod (Render)
+        run: |
+          curl -X POST ${{ secrets.secrets.RENDER_PROD_HOOK }}
+          echo "✅ Deploy a Producción disparado"
