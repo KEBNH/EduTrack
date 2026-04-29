@@ -42,7 +42,7 @@ jobs:
   name: Deploy a Desarrollo
   needs: test
   runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/dev'
+  if: github.ref == 'refs/heads/main'
 
   steps:
     - name: 🚀 Deploy a Dev (Render)
