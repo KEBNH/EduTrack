@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [dev, main] 
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -12,47 +12,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # 2. Instalar Python
       - name: Configurar Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3. Instalar dependencias
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      # 4. Ejecutar tests
       - name: Ejecutar tests
         run: python manage.py test
 
-      # 5. Análisis SAST con Bandit
       - name: 🔒 Análisis de seguridad (Bandit)
         run: |
           pip install bandit
-          # -ll = reportar solo severidad MEDIA y ALTA
-          # -ii = reportar solo confianza MEDIA y ALTA
           bandit -r . -ll -ii --exclude ./tests,./venv
 
   deploy-dev:
-  name: Deploy a Desarrollo
-  needs: test
-  runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/main'
+    name: Deploy a Desarrollo
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
-  steps:
-    - name: 🚀 Deploy a Dev (Render)
-      run: |
-        curl -X POST ${{ secrets.RENDER_DEV_HOOK }}
-        echo "Deploy a Dev disparado"
+    steps:
+      - name: 🚀 Deploy a Dev (Render)
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEV_HOOK }}
+          echo "Deploy a Dev disparado"
 
-    - name: ⏳ Esperar que Render inicie
-      run: sleep 30
-
+      - name: ⏳ Esperar que Render inicie
+        run: sleep 30
 
   smoke-test:
     name: Smoke Test en Dev
@@ -62,7 +54,6 @@ jobs:
     steps:
       - name: 🩺 Verificar que Dev responde
         run: |
-          # Intentar 5 veces con 10 segundos entre intento
           for i in 1 2 3 4 5; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
               https://edutrack-dev-server.onrender.com/health)
@@ -77,13 +68,13 @@ jobs:
           exit 1
 
   deploy-prod:
-  name: Deploy a Producción
-  needs: smoke-test
-  runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/main'
+    name: Deploy a Producción
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
-  steps:
-    - name: 🚀 Deploy a Prod (Render)
-      run: |
-        curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
-        echo "✅ Deploy a Producción disparado"
+    steps:
+      - name: 🚀 Deploy a Prod (Render)
+        run: |
+          curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
+          echo "✅ Deploy a Producción disparado"
