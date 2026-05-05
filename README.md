@@ -2,4 +2,4 @@
 typing...
 By BOTk
 and By Leo
-push new
+si recibiste esto el push fue correcto
