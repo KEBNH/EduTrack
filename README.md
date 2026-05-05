@@ -2,4 +2,4 @@
 typing...
 By BOTk
 and By Leo
-new push
+push new
