@@ -43,7 +43,7 @@ jobs:
     name: Deploy a Desarrollo
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
 
     steps:
       - name: Deploy a Dev en Render
@@ -58,7 +58,7 @@ jobs:
     name: Smoke Test en Dev
     needs: deploy-dev
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
 
     steps:
       - name: Verificar que Dev responde
@@ -80,7 +80,7 @@ jobs:
     name: Deploy a Produccion
     needs: smoke-test-dev
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
 
     steps:
       - name: Deploy a Prod en Render
