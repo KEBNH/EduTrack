@@ -1,5 +1,1 @@
-pytest
-asgiref==3.11.1
-Django==5.2.13
-sqlparse==0.5.5
-tzdata==2026.2
+-r backend/requirements.txt

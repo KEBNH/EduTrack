@@ -2,79 +2,84 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "feature/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   test:
-    name: Tests + Análisis de Seguridad
+    name: Tests y analisis de seguridad
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout código
+      - name: Checkout codigo
         uses: actions/checkout@v4
 
       - name: Configurar Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: pip install -r backend/requirements.txt
 
       - name: Ejecutar tests
-        run: python manage.py test
+        run: python backend/manage.py test
 
-      - name: 🔒 Análisis de seguridad (Bandit)
+      - name: Analisis de seguridad con Bandit
         run: |
           pip install bandit
-          bandit -r . -ll -ii --exclude ./tests,./venv
+          bandit -r backend -ll -ii --exclude ./tests,./venv
 
   deploy-dev:
     name: Deploy a Desarrollo
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: 🚀 Deploy a Dev (Render)
+      - name: Deploy a Dev en Render
         run: |
-          curl -X POST ${{ secrets.RENDER_DEV_HOOK }}
+          curl -fsS -X POST "${{ secrets.RENDER_DEV_HOOK }}"
           echo "Deploy a Dev disparado"
 
-      - name: ⏳ Esperar que Render inicie
+      - name: Esperar que Render inicie
         run: sleep 30
 
-  smoke-test:
+  smoke-test-dev:
     name: Smoke Test en Dev
     needs: deploy-dev
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: 🩺 Verificar que Dev responde
+      - name: Verificar que Dev responde
         run: |
           for i in 1 2 3 4 5; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://edutrack-dev-server.onrender.com/health)
-            if [[ $STATUS -eq 200 ]]; then
-              echo "✅ Dev responde correctamente (HTTP $STATUS)"
+              https://edutrack-dev-server.onrender.com/)
+            if [[ "$STATUS" -eq 200 ]]; then
+              echo "Dev responde correctamente (HTTP $STATUS)"
               exit 0
             fi
             echo "Intento $i fallido (HTTP $STATUS), reintentando..."
             sleep 10
           done
-          echo "❌ Dev no responde después de 5 intentos"
+          echo "Dev no responde despues de 5 intentos"
           exit 1
 
   deploy-prod:
-    name: Deploy a Producción
-    needs: smoke-test
+    name: Deploy a Produccion
+    needs: smoke-test-dev
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: 🚀 Deploy a Prod (Render)
+      - name: Deploy a Prod en Render
         run: |
-          curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
-          echo "✅ Deploy a Producción disparado"
+          curl -fsS -X POST "${{ secrets.RENDER_PROD_HOOK }}"
+          echo "Deploy a Produccion disparado"
