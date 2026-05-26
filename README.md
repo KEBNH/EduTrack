@@ -5,7 +5,7 @@
 Sistema de Alerta Temprana para la Prevención de la Deserción Escolar en el Perú.
 
 ![Status](https://img.shields.io/badge/status-en%20desarrollo-orange)
-![Python](https://img.shields.io/badge/Python-3.x-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Django](https://img.shields.io/badge/Django-framework-green)
 ![License](https://img.shields.io/badge/license-Academic-lightgrey)
 
@@ -31,6 +31,28 @@ La plataforma busca transformar el modelo reactivo tradicional en un enfoque pre
 - Análisis de riesgo automatizado.
 
 ## Tecnologías Utilizadas
+
+## Version de Python
+
+El proyecto fija la version de Python con `.python-version`:
+
+```text
+3.11
+```
+
+Con `pyenv` o `pyenv-win`, al entrar a la carpeta del repositorio se selecciona automaticamente Python 3.11 si esta instalado.
+
+Instalar la version:
+
+```bash
+pyenv install 3.11
+```
+
+Verificar:
+
+```bash
+python --version
+```
 
 | Tecnología | Propósito |
 |---|---|
