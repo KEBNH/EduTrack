@@ -37,7 +37,7 @@ jobs:
         run: python manage.py test
 
       - name: Analisis de seguridad con Bandit
-        run: bandit -r backend -ll -ii --exclude "backend/**/migrations/**,backend/**/__pycache__/**"
+        run: bandit -r . -ll -ii --exclude ".venv,static,templates,db.sqlite3,**/migrations,**/__pycache__"
 
   deploy-dev:
     name: Deploy a Desarrollo
