@@ -1,0 +1,922 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>EduTrack | Sistema de Alerta Temprana</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Sistema de Alerta Temprana (SAT) para la Prevención de la Deserción Escolar en el Perú" name="description" />
+    <meta content="EduTrack" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+    <!-- Theme Config Js -->
+    <script src="{% static 'js/config.js' %}"></script>
+    <!-- Vendor css -->
+    <link href="{% static 'css/vendor.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- App css -->
+    <link href="{% static 'css/app.min.css' %}" rel="stylesheet" type="text/css" id="app-style" />
+    <!-- Icons css -->
+    <link href="{% static 'css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div class="wrapper">
+
+        <!-- Sidenav Menu Start -->
+        <div class="sidenav-menu">
+
+            <!-- Brand Logo -->
+            <a href="/" class="logo">
+                <span class="logo-light">
+                    <span class="logo-lg"><img src="{% static 'img/logo_sat.png' %}" alt="logo"></span>
+                    <span class="logo-sm"><img src="{% static 'img/logo_sat_sm.png' %}" alt="small logo"></span>
+                </span>
+                <span class="logo-dark">
+                    <span class="logo-lg"><img src="{% static 'img/logo_sat_dark.png' %}" alt="dark logo"></span>
+                    <span class="logo-sm"><img src="{% static 'img/logo_sat_sm.png' %}" alt="small logo"></span>
+                </span>
+            </a>
+
+            <!-- Sidebar Hover Menu Toggle Button -->
+            <button class="button-sm-hover">
+                <i class="ti ti-circle align-middle"></i>
+            </button>
+
+            <!-- Full Sidebar Menu Close Button -->
+            <button class="button-close-fullsidebar">
+                <i class="ti ti-x align-middle"></i>
+            </button>
+
+            <div data-simplebar>
+
+                <!--- Sidenav Menu -->
+                <ul class="side-nav">
+                    <li class="side-nav-title">Stakeholders</li>
+                    <li class="side-nav-item">
+                        <a href="{% url 'employee_list' %}" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-user-screen"></i></span>
+                            <span class="menu-text"> Empleados </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-user-pentagon"></i></span>
+                            <span class="menu-text"> Director </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-school"></i></span>
+                            <span class="menu-text"> Docente </span>
+                        </a>
+                    </li>
+                    <li class="side-nav-item">
+                        <a href="" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-user-star"></i></span>
+                            <span class="menu-text"> Tutor </span>
+                        </a>
+                    </li>
+
+                    <li class="side-nav-title mt-2">
+                        Reportes
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarLayouts" aria-expanded="false" aria-controls="sidebarLayouts" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-layout"></i></span>
+                            <span class="menu-text"> Layouts </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarLayouts">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="layouts-horizontal.html" target="_blank" class="side-nav-link">Horizontal</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-detached.html" target="_blank" class="side-nav-link">Detached</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-full.html" target="_blank" class="side-nav-link">Full View</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-fullscreen.html" target="_blank" class="side-nav-link">Fullscreen View</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-hover.html" target="_blank" class="side-nav-link">Hover Menu</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-compact.html" target="_blank" class="side-nav-link">Compact</a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="layouts-icon-view.html" target="_blank" class="side-nav-link">Icon View</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarMultiLevel" aria-expanded="false" aria-controls="sidebarMultiLevel" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-box-multiple-3"></i></span>
+                            <span class="menu-text"> Multi Level </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarMultiLevel">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a data-bs-toggle="collapse" href="#sidebarSecondLevel" aria-expanded="false" aria-controls="sidebarSecondLevel" class="side-nav-link">
+                                        <span class="menu-text"> Second Level </span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <div class="collapse" id="sidebarSecondLevel">
+                                        <ul class="sub-menu">
+                                            <li class="side-nav-item">
+                                                <a href="javascript: void(0);" class="side-nav-link">
+                                                    <span class="menu-text">Item 1</span>
+                                                </a>
+                                            </li>
+                                            <li class="side-nav-item">
+                                                <a href="javascript: void(0);" class="side-nav-link">
+                                                    <span class="menu-text">Item 2</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a data-bs-toggle="collapse" href="#sidebarThirdLevel" aria-expanded="false" aria-controls="sidebarThirdLevel" class="side-nav-link">
+                                        <span class="menu-text"> Third Level </span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <div class="collapse" id="sidebarThirdLevel">
+                                        <ul class="sub-menu">
+                                            <li class="side-nav-item">
+                                                <a href="javascript: void(0);" class="side-nav-link">Item 1</a>
+                                            </li>
+                                            <li class="side-nav-item">
+                                                <a data-bs-toggle="collapse" href="#sidebarFourthLevel" aria-expanded="false" aria-controls="sidebarFourthLevel" class="side-nav-link">
+                                                    <span class="menu-text"> Item 2 </span>
+                                                    <span class="menu-arrow"></span>
+                                                </a>
+                                                <div class="collapse" id="sidebarFourthLevel">
+                                                    <ul class="sub-menu">
+                                                        <li class="side-nav-item">
+                                                            <a href="javascript: void(0);" class="side-nav-link">
+                                                                <span class="menu-text">Item 2.1</span>
+                                                            </a>
+                                                        </li>
+                                                        <li class="side-nav-item">
+                                                            <a href="javascript: void(0);" class="side-nav-link">
+                                                                <span class="menu-text">Item 2.2</span>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-title mt-2">Components</li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarBaseUI" aria-expanded="false" aria-controls="sidebarBaseUI" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-brightness"></i></span>
+                            <span class="menu-text"> Base UI </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarBaseUI">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="ui-accordions.html" class="side-nav-link">
+                                        <span class="menu-text">Accordions</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-alerts.html" class="side-nav-link">
+                                        <span class="menu-text">Alerts</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-avatars.html" class="side-nav-link">
+                                        <span class="menu-text">Avatars</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-badges.html" class="side-nav-link">
+                                        <span class="menu-text">Badges</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-breadcrumb.html" class="side-nav-link">
+                                        <span class="menu-text">Breadcrumb</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-buttons.html" class="side-nav-link">
+                                        <span class="menu-text">Buttons</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-cards.html" class="side-nav-link">
+                                        <span class="menu-text">Cards</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-carousel.html" class="side-nav-link">
+                                        <span class="menu-text">Carousel</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-collapse.html" class="side-nav-link">
+                                        <span class="menu-text">Collapse</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-dropdowns.html" class="side-nav-link">
+                                        <span class="menu-text">Dropdowns</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-ratios.html" class="side-nav-link">
+                                        <span class="menu-text">Ratios</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-grid.html" class="side-nav-link">
+                                        <span class="menu-text">Grid</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-links.html" class="side-nav-link">
+                                        <span class="menu-text">Links</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-list-group.html" class="side-nav-link">
+                                        <span class="menu-text">List Group</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-modals.html" class="side-nav-link">
+                                        <span class="menu-text">Modals</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-notifications.html" class="side-nav-link">
+                                        <span class="menu-text">Notifications</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-offcanvas.html" class="side-nav-link">
+                                        <span class="menu-text">Offcanvas</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-placeholders.html" class="side-nav-link">
+                                        <span class="menu-text">Placeholders</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-pagination.html" class="side-nav-link">
+                                        <span class="menu-text">Pagination</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-popovers.html" class="side-nav-link">
+                                        <span class="menu-text">Popovers</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-progress.html" class="side-nav-link">
+                                        <span class="menu-text">Progress</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-scrollspy.html" class="side-nav-link">
+                                        <span class="menu-text">Scrollspy</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-spinners.html" class="side-nav-link">
+                                        <span class="menu-text">Spinners</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-tabs.html" class="side-nav-link">
+                                        <span class="menu-text">Tabs</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-tooltips.html" class="side-nav-link">
+                                        <span class="menu-text">Tooltips</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-typography.html" class="side-nav-link">
+                                        <span class="menu-text">Typography</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="ui-utilities.html" class="side-nav-link">
+                                        <span class="menu-text">Utilities</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarExtendedUI" aria-expanded="false" aria-controls="sidebarExtendedUI" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-alien"></i></span>
+                            <span class="menu-text"> Extended UI </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarExtendedUI">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="extended-dragula.html" class="side-nav-link">
+                                        <span class="menu-text">Dragula</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="extended-sweetalerts.html" class="side-nav-link">
+                                        <span class="menu-text">Sweet Alerts</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="extended-ratings.html" class="side-nav-link">
+                                        <span class="menu-text">Ratings</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="extended-scrollbar.html" class="side-nav-link">
+                                        <span class="menu-text">Scrollbar</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarIcons" aria-expanded="false" aria-controls="sidebarIcons" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-leaf"></i></span>
+                            <span class="menu-text"> Icons </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarIcons">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="icons-tabler.html" class="side-nav-link">
+                                        <span class="menu-text">Tabler</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="icons-lucid.html" class="side-nav-link">
+                                        <span class="menu-text">Lucid</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarCharts" aria-expanded="false" aria-controls="sidebarCharts" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-chart-arcs"></i></span>
+                            <span class="menu-text"> Charts </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarCharts">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-area.html" class="side-nav-link">
+                                        <span class="menu-text">Area</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-bar.html" class="side-nav-link">
+                                        <span class="menu-text">Bar</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-bubble.html" class="side-nav-link">
+                                        <span class="menu-text">Bubble</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-candlestick.html" class="side-nav-link">
+                                        <span class="menu-text">Candlestick</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-column.html" class="side-nav-link">
+                                        <span class="menu-text">Column</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-heatmap.html" class="side-nav-link">
+                                        <span class="menu-text">Heatmap</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-line.html" class="side-nav-link">
+                                        <span class="menu-text">Line</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-mixed.html" class="side-nav-link">
+                                        <span class="menu-text">Mixed</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-timeline.html" class="side-nav-link">
+                                        <span class="menu-text">Timeline</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-boxplot.html" class="side-nav-link">
+                                        <span class="menu-text">Boxplot</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-treemap.html" class="side-nav-link">
+                                        <span class="menu-text">Treemap</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-pie.html" class="side-nav-link">
+                                        <span class="menu-text">Pie</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-radar.html" class="side-nav-link">
+                                        <span class="menu-text">Radar</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-radialbar.html" class="side-nav-link">
+                                        <span class="menu-text">RadialBar</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-scatter.html" class="side-nav-link">
+                                        <span class="menu-text">Scatter</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-polar-area.html" class="side-nav-link">
+                                        <span class="menu-text">Polar Area</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="charts-apex-sparklines.html" class="side-nav-link">
+                                        <span class="menu-text">Sparklines</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarForms" aria-expanded="false" aria-controls="sidebarForms" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-forms"></i></span>
+                            <span class="menu-text"> Forms </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarForms">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="form-elements.html" class="side-nav-link">
+                                        <span class="menu-text">Basic Elements</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-inputmask.html" class="side-nav-link">
+                                        <span class="menu-text">Inputmask</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-picker.html" class="side-nav-link">
+                                        <span class="menu-text">Picker</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-select.html" class="side-nav-link">
+                                        <span class="menu-text">Select</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-range-slider.html" class="side-nav-link">
+                                        <span class="menu-text">Range Slider</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-validation.html" class="side-nav-link">
+                                        <span class="menu-text">Validation</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-wizard.html" class="side-nav-link">
+                                        <span class="menu-text">Wizard</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-fileuploads.html" class="side-nav-link">
+                                        <span class="menu-text">File Uploads</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-editors.html" class="side-nav-link">
+                                        <span class="menu-text">Editors</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="form-layouts.html" class="side-nav-link">
+                                        <span class="menu-text">Layouts</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarTables" aria-expanded="false" aria-controls="sidebarTables" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-table"></i></span>
+                            <span class="menu-text"> Tables </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarTables">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="tables-basic.html" class="side-nav-link">
+                                        <span class="menu-text">Basic Tables</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="tables-gridjs.html" class="side-nav-link">
+                                        <span class="menu-text">Gridjs Tables</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="tables-datatable.html" class="side-nav-link">
+                                        <span class="menu-text">Datatable Tables</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="side-nav-item">
+                        <a data-bs-toggle="collapse" href="#sidebarMaps" aria-expanded="false" aria-controls="sidebarMaps" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-map-pin"></i></span>
+                            <span class="menu-text"> Maps </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarMaps">
+                            <ul class="sub-menu">
+                                <li class="side-nav-item">
+                                    <a href="maps-google.html" class="side-nav-link">
+                                        <span class="menu-text">Google Maps</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="maps-vector.html" class="side-nav-link">
+                                        <span class="menu-text">Vector Maps</span>
+                                    </a>
+                                </li>
+                                <li class="side-nav-item">
+                                    <a href="maps-leaflet.html" class="side-nav-link">
+                                        <span class="menu-text">Leaflet Maps</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+        <!-- Sidenav Menu End -->
+        
+
+        <!-- Topbar Start -->
+        <header class="app-topbar">
+            <div class="page-container topbar-menu">
+                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Brand Logo -->
+                    <a href="index.html" class="logo">
+                        <span class="logo-light">
+                            <span class="logo-lg"><img src="assets/images/logo.png" alt="logo"></span>
+                            <span class="logo-sm"><img src="assets/images/logo-sm.png" alt="small logo"></span>
+                        </span>
+
+                        <span class="logo-dark">
+                            <span class="logo-lg"><img src="assets/images/logo-dark.png" alt="dark logo"></span>
+                            <span class="logo-sm"><img src="assets/images/logo-sm.png" alt="small logo"></span>
+                        </span>
+                    </a>
+
+                    <!-- Sidebar Menu Toggle Button -->
+                    <button class="sidenav-toggle-button btn-icon rounded-circle btn btn-light">
+                        <i class="ti ti-menu-2 fs-22"></i>
+                    </button>
+
+                    <!-- Horizontal Menu Toggle Button -->
+                    <button class="topnav-toggle-button px-2" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
+                        <i class="ti ti-menu-2 fs-22"></i>
+                    </button>
+
+                    <!-- Button Trigger Search Modal -->
+                    <div class="topbar-search text-muted d-none d-xl-flex gap-2 align-items-center" data-bs-toggle="modal" data-bs-target="#searchModal" type="button">
+                        <span class="me-2 fs-12 fw-medium">Buscar..</span>
+                        <i class="ti ti-search fs-18 ms-auto"></i>
+                    </div>                   
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Search for small devices -->
+                    <div class="topbar-item d-flex d-xl-none">
+                        <button class="topbar-link" data-bs-toggle="modal" data-bs-target="#searchModal" type="button">
+                            <i class="ti ti-search fs-22"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification Dropdown -->
+                    <div class="topbar-item">
+                        <div class="dropdown">
+                            <button class="topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,23" type="button" data-bs-auto-close="outside" aria-haspopup="false" aria-expanded="false">
+                                <i class="ti ti-bell-z fs-24"></i>
+                                <span class="noti-icon-badge badge text-bg-danger">05</span>
+                            </button>
+
+                            <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg fs-13">
+                                <div class="py-2 px-3 border-bottom border-dashed">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="dropdown">
+                                                <a href="#" class="dropdown-toggle drop-arrow-none link-dark" data-bs-toggle="dropdown" data-bs-offset="0,15" aria-expanded="false">
+                                                    <i class="ti ti-settings fs-22 align-middle"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-end">
+                                                    <!-- item-->
+                                                    <a href="javascript:void(0);" class="dropdown-item">Mark as Read</a>
+                                                    <!-- item-->
+                                                    <a href="javascript:void(0);" class="dropdown-item">Delete All</a>
+                                                    <!-- item-->
+                                                    <a href="javascript:void(0);" class="dropdown-item">Do not Disturb</a>
+                                                    <!-- item-->
+                                                    <a href="javascript:void(0);" class="dropdown-item">Other Settings</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="position-relative z-2 shadow-none rounded-0" style="max-height: 300px;" data-simplebar>
+                                    <!-- item-->
+                                    <div class="dropdown-item notification-item py-2 text-wrap active" id="notification-1">
+                                        <span class="d-flex align-items-center">
+                                            <div class="avatar flex-shrink-0 me-2">
+                                                <span class="avatar-title text-bg-success rounded-circle fs-22">
+                                                    <i class="ti ti-message-plus"></i>
+                                                </span>
+                                            </div>
+                                            <span class="flex-grow-1 text-muted">
+                                                <span class="fw-medium text-body">Glady Haid</span> commented on <span class="fw-medium text-body">paces admin status</span>
+                                                <br />
+                                                <span class="fs-12">25m ago</span>
+                                            </span>
+                                            <span class="notification-item-close">
+                                                <button type="button" class="btn btn-ghost-danger rounded-circle btn-sm btn-icon" data-dismissible="#notification-1">
+                                                    <i class="ti ti-x fs-16"></i>
+                                                </button>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <!-- item-->
+                                    <div class="dropdown-item notification-item py-2 text-wrap" id="notification-3">
+                                        <span class="d-flex align-items-center">
+                                            <div class="avatar flex-shrink-0 me-2">
+                                                <span class="avatar-title text-bg-info rounded-circle fs-22">
+                                                    <i class="ti ti-moneybag"></i>
+                                                </span>
+                                            </div>
+                                            <span class="flex-grow-1 text-muted">
+                                                You withdraw a <span class="fw-medium text-body">$500</span> by <span class="fw-medium text-body">New York ATM</span>
+                                                <br />
+                                                <span class="fs-12">2h ago</span>
+                                            </span>
+                                            <span class="notification-item-close">
+                                                <button type="button" class="btn btn-ghost-danger rounded-circle btn-sm btn-icon" data-dismissible="#notification-3">
+                                                    <i class="ti ti-x fs-16"></i>
+                                                </button>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <!-- item-->
+                                    <div class="dropdown-item notification-item py-2 text-wrap" id="notification-2">
+                                        <span class="d-flex align-items-center">
+                                            <span class="me-2 position-relative flex-shrink-0">
+                                                <img src="assets/images/users/avatar-4.jpg" class="avatar rounded-circle" alt="" />
+                                            </span>
+                                            <span class="flex-grow-1 text-muted">
+                                                <span class="fw-medium text-body">Tommy Berry</span> donated <span class="text-success">$100.00</span> for <span class="fw-medium text-body">Carbon removal program</span>
+                                                <br />
+                                                <span class="fs-12">58m ago</span>
+                                            </span>
+                                            <span class="notification-item-close">
+                                                <button type="button" class="btn btn-ghost-danger rounded-circle btn-sm btn-icon" data-dismissible="#notification-2">
+                                                    <i class="ti ti-x fs-16"></i>
+                                                </button>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <!-- item-->
+                                    <div class="dropdown-item notification-item py-2 text-wrap" id="notification-4">
+                                        <span class="d-flex align-items-center">
+                                            <span class="me-2 position-relative flex-shrink-0">
+                                                <img src="assets/images/users/avatar-7.jpg" class="avatar rounded-circle" alt="" />
+                                            </span>
+                                            <span class="flex-grow-1 text-muted">
+                                                <span class="fw-medium text-body">Richard Allen</span> followed you in <span class="fw-medium text-body">Facebook</span>
+                                                <br />
+                                                <span class="fs-12">3h ago</span>
+                                            </span>
+                                            <span class="notification-item-close">
+                                                <button type="button" class="btn btn-ghost-danger rounded-circle btn-sm btn-icon" data-dismissible="#notification-4">
+                                                    <i class="ti ti-x fs-16"></i>
+                                                </button>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <!-- item-->
+                                    <div class="dropdown-item notification-item py-2 text-wrap" id="notification-5">
+                                        <span class="d-flex align-items-center">
+                                            <span class="me-2 position-relative flex-shrink-0">
+                                                <img src="assets/images/users/avatar-10.jpg" class="avatar rounded-circle" alt="" />
+                                            </span>
+                                            <span class="flex-grow-1 text-muted">
+                                                <span class="fw-medium text-body">Victor Collier</span> liked you recent photo in <span class="fw-medium text-body">Instagram</span>
+                                                <br />
+                                                <span class="fs-12">10h ago</span>
+                                            </span>
+                                            <span class="notification-item-close">
+                                                <button type="button" class="btn btn-ghost-danger rounded-circle btn-sm btn-icon" data-dismissible="#notification-5">
+                                                    <i class="ti ti-x fs-16"></i>
+                                                </button>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- All-->
+                                <a href="javascript:void(0);" class="dropdown-item notification-item text-center text-reset text-decoration-underline link-offset-2 fw-bold notify-item border-top border-light py-2">
+                                    View All
+                                </a>
+                            </div>
+                        </div>
+                    </div>                    
+
+                    <!-- Light/Dark Mode Button -->
+                    <div class="topbar-item d-none d-sm-flex">
+                        <button class="topbar-link" id="light-dark-mode" type="button">
+                            <i class="ti ti-moon fs-22"></i>
+                        </button>
+                    </div>
+
+                    <!-- User Dropdown -->
+                    <div class="topbar-item nav-user">
+                        <div class="dropdown">
+                            <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown" data-bs-offset="0,19" type="button" aria-haspopup="false" aria-expanded="false">
+                                <img src="{% static 'img/avatar-7.jpg' %}" width="32" class="rounded-circle me-lg-2 d-flex" alt="user-image">
+                                <span class="d-lg-flex flex-column gap-1 d-none">
+                                    <h5 class="my-0 fs-13 fw-semibold">Kevin M.</h5>
+                                </span>
+                                <i class="ti ti-chevron-down d-none d-lg-block align-middle ms-2"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <!-- item-->
+                                <div class="dropdown-header noti-title">
+                                    <h6 class="text-overflow m-0">Welcome !</h6>
+                                </div>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <i class="ti ti-user-hexagon me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">My Account</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <i class="ti ti-wallet me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Wallet : <span class="fw-semibold">$985.25</span></span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <i class="ti ti-settings me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Settings</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <i class="ti ti-lifebuoy me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Support</span>
+                                </a>
+
+                                <div class="dropdown-divider"></div>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item">
+                                    <i class="ti ti-lock-square-rounded me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Lock Screen</span>
+                                </a>
+
+                                <!-- item-->
+                                <a href="javascript:void(0);" class="dropdown-item active fw-semibold text-danger">
+                                    <i class="ti ti-logout me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Topbar End -->
+
+        <!-- Search Modal -->
+        <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-transparent">
+                    <form>
+                        <div class="card mb-1">
+                            <div class="px-3 py-2 d-flex flex-row align-items-center" id="top-search">
+                                <i class="ti ti-search fs-22"></i>
+                                <input type="search" class="form-control border-0" id="search-modal-input" placeholder="Buscar">
+                                <button type="submit" class="btn p-0" data-bs-dismiss="modal" aria-label="Close">[esc]</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+        <div class="page-content">
+
+            <div class="page-container">
+                {% block contenido %}
+                {% endblock contenido %}
+            </div>
+            <!-- container -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="page-container">
+                    <div class="row">
+                        <div class="col-md-6 text-center text-md-start">
+                            <script>document.write(new Date().getFullYear())</script> © EduTrack 
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-md-end footer-links d-none d-md-block">
+                                {% comment %} <a href="javascript: void(0);">About</a>
+                                <a href="javascript: void(0);">Support</a>
+                                <a href="javascript: void(0);">Contact Us</a> {% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
+    </div>
+    <!-- END wrapper -->
+    {% block scripts %}
+    {% endblock scripts %}
+    <!-- Vendor js -->
+    <script src="{% static 'js/vendor.min.js' %}"></script>
+    <!-- App js -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
