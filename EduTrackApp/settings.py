@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'EduTrack.urls'
+ROOT_URLCONF = 'EduTrackApp.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'EduTrack.wsgi.application'
+WSGI_APPLICATION = 'EduTrackApp.wsgi.application'
 
 
 # Database
