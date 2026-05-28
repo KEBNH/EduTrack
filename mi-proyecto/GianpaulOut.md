@@ -1,1 +1,0 @@
-"Odio al gianpaul" 
