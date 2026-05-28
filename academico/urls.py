@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.urls import path
-from .views import EmployeeListView, EmployeeCreateView, EmployeeUpdateView, EmployeeDeleteView, inicio
+from .views import  inicio, portada, iniciar_sesion, cerrar_sesion,crear_usuario, listar_elementos
 
 urlpatterns = [
-    path('', inicio),
-    path('employee/', EmployeeListView.as_view(), name='employee_list'),
-    path('employee-create/', EmployeeCreateView.as_view(), name='employee_create'),
-    path('employee-edit/<str:codigo_unico>', EmployeeUpdateView.as_view(), name='employee_edit'),
-    path('employee-delete/<str:codigo_unico>', EmployeeDeleteView.as_view(), name='employee_delete'),
+    path('', portada, name='portada'),
+    path('login/', iniciar_sesion, name='login'),
+    path('logout/', cerrar_sesion, name='logout'), 
+    path('panel/', inicio, name='inicio'),
+    path('panel/registro',crear_usuario,name="crear_usuarios"),
+    path('panel/lista/<str:tipo>/', listar_elementos, name='listar_elementos'),
 ]

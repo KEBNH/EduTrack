@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2 mb-4">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">{{ titulo }}</h4>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        {% for field in user_form %}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field }}
+                                
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in field.errors %}
+                                            <i class="ti ti-alert-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted small">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'inicio' %}" class="btn btn-light">Cancelar</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="ti ti-device-floppy"></i> Guardar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock contenido %}

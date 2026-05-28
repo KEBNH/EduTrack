@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head mb-4">
+    <h4 class="fs-17 mb-0">{{ titulo }}</h4>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    {% if tipo_lista == 'profesores' %}
+                        <th>Nombre del Docente</th>
+                        <th>Correo</th>
+                        <th>Celular</th>
+                    {% elif tipo_lista == 'estudiantes' %}
+                        <th>Nombre del Alumno</th>
+                        <th>DNI</th>
+                        <th>Profesor Asignado</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in datos %}
+                    <tr>
+                        {% if tipo_lista == 'profesores' %}
+                            <td>{{ item.first_name|default:"Sin Nombre" }}</td>
+                            <td>{{ item.email }}</td>
+                            <td>{{ item.celular|default:"-" }}</td>
+                            
+                        {% elif tipo_lista == 'estudiantes' %}
+                            <td>{{ item.nombre }} {{ item.apellidos }}</td>
+                            <td>{{ item.dni }}</td>
+                            <td>{{ item.profesor_asignado.first_name|default:"Sin asignar" }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock contenido %}

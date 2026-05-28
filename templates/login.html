@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduTrack | Iniciar Sesión</title>
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/images/favicons/apple-touch-icon.png' %}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/images/favicons/favicon-32x32.png' %}" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/images/favicons/favicon-16x16.png' %}" />
+    <link rel="manifest" href="{% static 'assets/images/favicons/site.webmanifest' %}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'assets/vendors/bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendors/fontawesome/css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/eduhive.css' %}" />
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <header class="main-header">
+            <div class="container d-flex justify-content-center align-items-center py-4">
+                <a href="{% url 'portada' %}">
+                    <img src="{% static 'assets/images/logo-dark.png' %}" alt="EduTrack Logo" width="200">
+                </a>
+            </div>
+        </header>
+
+        <section class="login-section" style="padding: 80px 0; background-color: #f4f6f9; min-height: 70vh; display: flex; align-items: center;">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-5 col-md-8">
+                        <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <h3 style="font-weight: 700; color: #1a1a1a;">Iniciar Sesión</h3>
+                                    <p class="text-muted">Ingresa tus credenciales para acceder al SAT</p>
+                                </div>
+
+                                {% if error %}
+                                <div class="alert alert-danger text-center" role="alert">
+                                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                                </div>
+                                {% endif %}
+
+                                <form action="{% url 'login' %}" method="POST">
+                                    {% csrf_token %}
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label" style="font-weight: 600;">Correo Electrónico</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fas fa-user text-muted"></i></span>
+                                           <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="ejemplo@correo.com" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="password" class="form-label" style="font-weight: 600;">Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fas fa-lock text-muted"></i></span>
+                                            <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="Tu contraseña" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg" style="background-color: #ff6a00; border: none; font-weight: bold;">Ingresar al Sistema</button>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
