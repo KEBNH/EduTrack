@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4>{{ titulo }}</h4>
+        {% if request.user.rol == "PERSONAL_ACADEMICO" or titulo == "Asistencias" or titulo == "Notas" %}
+        <a class="btn btn-success" href="{% url url_crear %}">Nuevo registro</a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% for objeto in objetos %}
+            <div class="list-group-item">{{ objeto }}</div>
+            {% empty %}
+            <p class="text-muted">No hay registros.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock contenido %}

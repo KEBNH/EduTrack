@@ -1,55 +1,121 @@
 from django import forms
-from .models import Employee
 
-class EmployeeForm(forms.ModelForm):
+from accounts.models import CustomUser
+
+from .models import Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
+
+
+class FormularioInstitucional(forms.ModelForm):
+    def __init__(self, *args, usuario_actual=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usuario_actual = usuario_actual
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
+
+
+class AlumnoForm(FormularioInstitucional):
     class Meta:
-        model = Employee
-        fields = ['dni', 'nombre', 'apellidos', 'celular', 'correo', 'rol', 'activo']
-        
-        widgets = {
-            'dni': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'maxlength': 8, 'placeholder': 'DNI'}),
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'maxlength': 100, 'placeholder': 'Nombre del empleado'}),
-            'apellidos': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'maxlength': 100, 'placeholder': 'Apellidos del empleado'}),
-            'celular': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 9, 'placeholder': 'Ej. 912345678'}),
-            'correo': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 100, 'placeholder': 'Correo electrónico'}),           
-            'rol': forms.Select(attrs={'class': 'form-select js-select2', 'required': True}),
-            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-        labels = {
-            'dni': 'DNI',
-            'nombre': 'Nombre',
-            'apellidos': 'Apellidos',
-            'celular': 'Celular',
-            'correo': 'Correo Electrónico',
-            'rol': 'Rol',            
-            'activo': 'Activo',
-        }
-    # ==========================
-    # VALIDACIONES BACKEND
-    # ==========================
-    def clean_dni(self):
-        dni = self.cleaned_data['dni'].strip()
-        if len(dni) != 8:
-            raise forms.ValidationError('El DNI debe tener 8 dígitos')
-        return dni
-    
-    def clean_nombre(self):
-        nombre = self.cleaned_data['nombre'].strip()
-        if len(nombre) < 3:
-            raise forms.ValidationError('El nombre debe tener al menos 3 caracteres.')
-        return nombre
+        model = Alumno
+        fields = ("dni", "nombres", "apellidos", "fecha_nacimiento", "activo")
+        widgets = {"fecha_nacimiento": forms.DateInput(attrs={"type": "date"})}
 
-    def clean_apellidos(self):
-        apellidos = self.cleaned_data['apellidos'].strip()
-        if len(apellidos) < 5:
-            raise forms.ValidationError('Los apellidos deben tener al menos 5 caracteres.')
-        return apellidos
 
-    def clean_celular(self):
-        celular = self.cleaned_data.get('celular')
-        if celular:
-            if not celular.isdigit():
-                raise forms.ValidationError('El celular solo debe contener números.')
-            if len(celular) != 9:
-                raise forms.ValidationError('El celular debe tener exactamente 9 dígitos.')
-        return celular
+class ApoderadoForm(FormularioInstitucional):
+    class Meta:
+        model = Apoderado
+        fields = (
+            "dni",
+            "nombres",
+            "apellidos",
+            "celular",
+            "correo",
+            "parentesco",
+            "alumnos",
+            "activo",
+        )
+        widgets = {"alumnos": forms.SelectMultiple(attrs={"class": "form-select"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.usuario_actual and self.usuario_actual.institucion_id:
+            self.fields["alumnos"].queryset = Alumno.objects.filter(
+                institucion=self.usuario_actual.institucion
+            )
+        else:
+            self.fields["alumnos"].queryset = Alumno.objects.none()
+
+
+class GradoForm(FormularioInstitucional):
+    class Meta:
+        model = Grado
+        fields = ("nivel", "nombre", "seccion", "anio_academico", "activo")
+
+
+class CursoForm(FormularioInstitucional):
+    class Meta:
+        model = Curso
+        fields = ("nombre", "codigo", "grado", "profesor", "activo")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        institucion = getattr(self.usuario_actual, "institucion", None)
+        self.fields["grado"].queryset = Grado.objects.filter(institucion=institucion)
+        self.fields["profesor"].queryset = CustomUser.objects.filter(
+            institucion=institucion, rol=CustomUser.Rol.PROFESOR, is_active=True
+        )
+
+
+class MatriculaForm(FormularioInstitucional):
+    class Meta:
+        model = Matricula
+        fields = ("alumno", "grado", "anio_academico", "estado")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        institucion = getattr(self.usuario_actual, "institucion", None)
+        self.fields["alumno"].queryset = Alumno.objects.filter(
+            institucion=institucion, activo=True
+        )
+        self.fields["grado"].queryset = Grado.objects.filter(
+            institucion=institucion, activo=True
+        )
+
+
+class AsistenciaForm(FormularioInstitucional):
+    class Meta:
+        model = Asistencia
+        fields = ("matricula", "fecha", "estado", "observacion")
+        widgets = {"fecha": forms.DateInput(attrs={"type": "date"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        institucion = getattr(self.usuario_actual, "institucion", None)
+        matriculas = Matricula.objects.filter(institucion=institucion, estado="ACTIVA")
+        if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
+            matriculas = matriculas.filter(grado__cursos__profesor=self.usuario_actual).distinct()
+        self.fields["matricula"].queryset = matriculas
+
+
+class NotaForm(FormularioInstitucional):
+    class Meta:
+        model = Nota
+        fields = ("matricula", "curso", "periodo", "evaluacion", "calificacion")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        institucion = getattr(self.usuario_actual, "institucion", None)
+        matriculas = Matricula.objects.filter(institucion=institucion, estado="ACTIVA")
+        cursos = Curso.objects.filter(institucion=institucion, activo=True)
+        if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
+            cursos = cursos.filter(profesor=self.usuario_actual)
+            matriculas = matriculas.filter(grado__cursos__in=cursos).distinct()
+        self.fields["matricula"].queryset = matriculas
+        self.fields["curso"].queryset = cursos
+
+    def clean(self):
+        cleaned_data = super().clean()
+        matricula = cleaned_data.get("matricula")
+        curso = cleaned_data.get("curso")
+        if matricula and curso and matricula.grado_id != curso.grado_id:
+            raise forms.ValidationError("El curso no pertenece al grado de la matricula.")
+        return cleaned_data
