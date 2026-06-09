@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 
 from accounts.models import CustomUser
@@ -9,6 +11,8 @@ class FormularioInstitucional(forms.ModelForm):
     def __init__(self, *args, usuario_actual=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.usuario_actual = usuario_actual
+        if usuario_actual and usuario_actual.institucion_id:
+            self.instance.institucion = usuario_actual.institucion
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
@@ -17,7 +21,39 @@ class AlumnoForm(FormularioInstitucional):
     class Meta:
         model = Alumno
         fields = ("dni", "nombres", "apellidos", "fecha_nacimiento", "activo")
-        widgets = {"fecha_nacimiento": forms.DateInput(attrs={"type": "date"})}
+        labels = {"fecha_nacimiento": "Fecha de nacimiento"}
+        help_texts = {"dni": "Ingrese exactamente 8 digitos."}
+        widgets = {
+            "dni": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "8", "autocomplete": "off"}
+            ),
+            "fecha_nacimiento": forms.DateInput(attrs={"type": "date"}),
+            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def clean_dni(self):
+        dni = self.cleaned_data["dni"].strip()
+        if not dni.isdigit() or len(dni) != 8:
+            raise forms.ValidationError("El DNI debe contener exactamente 8 digitos.")
+        if self.instance.institucion_id and Alumno.objects.filter(
+            institucion_id=self.instance.institucion_id, dni=dni
+        ).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(
+                "Ya existe un alumno con este DNI en la institucion."
+            )
+        return dni
+
+    def clean_nombres(self):
+        return " ".join(self.cleaned_data["nombres"].split())
+
+    def clean_apellidos(self):
+        return " ".join(self.cleaned_data["apellidos"].split())
+
+    def clean_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data["fecha_nacimiento"]
+        if fecha_nacimiento > date.today():
+            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
+        return fecha_nacimiento
 
 
 class ApoderadoForm(FormularioInstitucional):
@@ -43,6 +79,16 @@ class ApoderadoForm(FormularioInstitucional):
             )
         else:
             self.fields["alumnos"].queryset = Alumno.objects.none()
+
+    def clean_alumnos(self):
+        alumnos = self.cleaned_data["alumnos"]
+        if self.usuario_actual and alumnos.exclude(
+            institucion=self.usuario_actual.institucion
+        ).exists():
+            raise forms.ValidationError(
+                "Todos los alumnos deben pertenecer a la institucion del apoderado."
+            )
+        return alumnos
 
 
 class GradoForm(FormularioInstitucional):
@@ -111,11 +157,3 @@ class NotaForm(FormularioInstitucional):
             matriculas = matriculas.filter(grado__cursos__in=cursos).distinct()
         self.fields["matricula"].queryset = matriculas
         self.fields["curso"].queryset = cursos
-
-    def clean(self):
-        cleaned_data = super().clean()
-        matricula = cleaned_data.get("matricula")
-        curso = cleaned_data.get("curso")
-        if matricula and curso and matricula.grado_id != curso.grado_id:
-            raise forms.ValidationError("El curso no pertenece al grado de la matricula.")
-        return cleaned_data

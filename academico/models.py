@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -132,6 +133,20 @@ class Curso(ModeloInstitucional):
             )
         ]
 
+    def clean(self):
+        errors = {}
+        if self.grado_id and self.institucion_id != self.grado.institucion_id:
+            errors["grado"] = "El grado debe pertenecer a la misma institucion del curso."
+        if self.profesor_id:
+            if self.institucion_id != self.profesor.institucion_id:
+                errors["profesor"] = (
+                    "El profesor debe pertenecer a la misma institucion del curso."
+                )
+            elif self.profesor.rol != "PROFESOR":
+                errors["profesor"] = "El usuario asignado debe tener el rol Profesor."
+        if errors:
+            raise ValidationError(errors)
+
     def __str__(self):
         return f"{self.nombre} - {self.grado}"
 
@@ -157,6 +172,24 @@ class Matricula(ModeloInstitucional):
             )
         ]
 
+    def clean(self):
+        errors = {}
+        if self.alumno_id and self.institucion_id != self.alumno.institucion_id:
+            errors["alumno"] = (
+                "El alumno debe pertenecer a la misma institucion de la matricula."
+            )
+        if self.grado_id:
+            if self.institucion_id != self.grado.institucion_id:
+                errors["grado"] = (
+                    "El grado debe pertenecer a la misma institucion de la matricula."
+                )
+            if self.anio_academico != self.grado.anio_academico:
+                errors["anio_academico"] = (
+                    "El anio academico debe coincidir con el anio del grado."
+                )
+        if errors:
+            raise ValidationError(errors)
+
     def __str__(self):
         return f"{self.alumno} - {self.grado}"
 
@@ -181,6 +214,17 @@ class Asistencia(ModeloInstitucional):
                 fields=("matricula", "fecha"), name="asistencia_unica_matricula_fecha"
             )
         ]
+
+    def clean(self):
+        if self.matricula_id and self.institucion_id != self.matricula.institucion_id:
+            raise ValidationError(
+                {
+                    "matricula": (
+                        "La matricula debe pertenecer a la misma institucion "
+                        "de la asistencia."
+                    )
+                }
+            )
 
     def __str__(self):
         return f"{self.matricula.alumno} - {self.fecha}: {self.get_estado_display()}"
@@ -212,6 +256,22 @@ class Nota(ModeloInstitucional):
             )
         ]
 
+    def clean(self):
+        errors = {}
+        if self.matricula_id and self.institucion_id != self.matricula.institucion_id:
+            errors["matricula"] = (
+                "La matricula debe pertenecer a la misma institucion de la nota."
+            )
+        if self.curso_id:
+            if self.institucion_id != self.curso.institucion_id:
+                errors["curso"] = (
+                    "El curso debe pertenecer a la misma institucion de la nota."
+                )
+            elif self.matricula_id and self.curso.grado_id != self.matricula.grado_id:
+                errors["curso"] = "El curso debe pertenecer al grado de la matricula."
+        if errors:
+            raise ValidationError(errors)
+
     def __str__(self):
         return f"{self.matricula.alumno} - {self.curso}: {self.calificacion}"
 
@@ -234,6 +294,16 @@ class Alerta(ModeloInstitucional):
 
     class Meta:
         ordering = ("-fcreacion",)
+
+    def clean(self):
+        if self.alumno_id and self.institucion_id != self.alumno.institucion_id:
+            raise ValidationError(
+                {
+                    "alumno": (
+                        "El alumno debe pertenecer a la misma institucion de la alerta."
+                    )
+                }
+            )
 
     def __str__(self):
         return f"{self.alumno} - {self.get_tipo_display()} ({self.get_nivel_riesgo_display()})"

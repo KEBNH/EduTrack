@@ -1,6 +1,7 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView
@@ -70,6 +71,7 @@ class FormularioInstitucionalMixin(PermisoRolMixin):
     template_name = "academico/model_form.html"
     titulo = ""
     url_lista = ""
+    mensaje_exito = "Registro guardado correctamente."
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -78,7 +80,9 @@ class FormularioInstitucionalMixin(PermisoRolMixin):
 
     def form_valid(self, form):
         form.instance.institucion = self.request.user.institucion
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        messages.success(self.request, self.mensaje_exito)
+        return response
 
     def get_queryset(self):
         return super().get_queryset().filter(institucion=self.request.user.institucion)
@@ -96,6 +100,35 @@ class AlumnoListView(ListaInstitucionalMixin, ListView):
     model = Alumno
     titulo = "Alumnos"
     url_crear = "academico:alumno_crear"
+    template_name = "academico/alumno_list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        consulta = self.request.GET.get("q", "").strip()
+        estado = self.request.GET.get("estado", "").strip()
+        if consulta:
+            queryset = queryset.filter(
+                Q(dni__icontains=consulta)
+                | Q(nombres__icontains=consulta)
+                | Q(apellidos__icontains=consulta)
+            )
+        if estado == "ACTIVO":
+            queryset = queryset.filter(activo=True)
+        elif estado == "INACTIVO":
+            queryset = queryset.filter(activo=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "q": self.request.GET.get("q", "").strip(),
+                "estado": self.request.GET.get("estado", "").strip(),
+                "puede_editar": self.request.user.rol == CustomUser.Rol.PERSONAL_ACADEMICO,
+            }
+        )
+        return context
 
 
 class AlumnoCreateView(FormularioInstitucionalMixin, CreateView):
@@ -104,6 +137,7 @@ class AlumnoCreateView(FormularioInstitucionalMixin, CreateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Registrar alumno"
     url_lista = "academico:alumno_lista"
+    mensaje_exito = "Alumno registrado correctamente."
 
 
 class AlumnoUpdateView(FormularioInstitucionalMixin, UpdateView):
@@ -112,6 +146,7 @@ class AlumnoUpdateView(FormularioInstitucionalMixin, UpdateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Editar alumno"
     url_lista = "academico:alumno_lista"
+    mensaje_exito = "Datos del alumno actualizados correctamente."
 
 
 class ApoderadoListView(ListaInstitucionalMixin, ListView):
