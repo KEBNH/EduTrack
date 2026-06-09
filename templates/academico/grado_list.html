@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Gestion de grados</h4>
+    </div>
+</div>
+
+{% for message in messages %}
+<div class="alert alert-success">{{ message }}</div>
+{% endfor %}
+
+<div class="card">
+    <div class="card-header border-bottom d-flex flex-wrap align-items-center gap-2">
+        <div class="flex-grow-1">
+            <h4 class="card-title">Grados de la institucion</h4>
+        </div>
+        {% if puede_editar %}
+        <a href="{% url 'academico:grado_crear' %}" class="btn btn-success">
+            <i class="ti ti-plus me-1"></i> Nuevo grado
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <input
+                    type="search"
+                    class="form-control"
+                    name="q"
+                    value="{{ q }}"
+                    placeholder="Buscar nombre o seccion"
+                >
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="nivel">
+                    <option value="">Todos los niveles</option>
+                    {% for valor, etiqueta in niveles %}
+                    <option value="{{ valor }}" {% if nivel == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input
+                    type="number"
+                    class="form-control"
+                    name="anio"
+                    value="{{ anio }}"
+                    placeholder="Anio"
+                >
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="estado">
+                    <option value="">Todos los estados</option>
+                    <option value="ACTIVO" {% if estado == "ACTIVO" %}selected{% endif %}>Activo</option>
+                    <option value="INACTIVO" {% if estado == "INACTIVO" %}selected{% endif %}>Inactivo</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-1">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-light" href="{% url 'academico:grado_lista' %}">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover text-nowrap mb-0">
+            <thead class="bg-light-subtle">
+                <tr>
+                    <th>Nivel</th>
+                    <th>Grado</th>
+                    <th>Seccion</th>
+                    <th>Anio academico</th>
+                    <th>Tutor</th>
+                    <th>Estado</th>
+                    {% if puede_editar %}<th class="text-end">Opciones</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for grado in objetos %}
+                <tr>
+                    <td>{{ grado.get_nivel_display }}</td>
+                    <td>{{ grado.nombre }}</td>
+                    <td>{{ grado.seccion }}</td>
+                    <td>{{ grado.anio_academico }}</td>
+                    <td>{{ grado.tutor|default:"Sin asignar" }}</td>
+                    <td>
+                        {% if grado.activo %}
+                        <span class="badge bg-success-subtle text-success">Activo</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    {% if puede_editar %}
+                    <td class="text-end">
+                        <a
+                            href="{% url 'academico:grado_editar' grado.pk %}"
+                            class="btn btn-soft-success btn-icon btn-sm rounded-circle"
+                            title="Editar"
+                        >
+                            <i class="ti ti-edit"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if puede_editar %}7{% else %}6{% endif %}" class="text-center text-muted py-4">
+                        No hay grados para mostrar.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer">
+        <ul class="pagination justify-content-end mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&nivel={{ nivel }}&anio={{ anio }}&estado={{ estado }}">Anterior</a>
+            </li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&nivel={{ nivel }}&anio={{ anio }}&estado={{ estado }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock contenido %}

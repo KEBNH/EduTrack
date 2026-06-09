@@ -9,10 +9,22 @@ from .models import (
     Grado,
     Institucion,
     Matricula,
+    MatriculaCurso,
     Nota,
 )
 
 
 admin.site.register(
-    [Institucion, Alumno, Apoderado, Grado, Curso, Matricula, Asistencia, Nota, Alerta]
+    [
+        Institucion,
+        Alumno,
+        Apoderado,
+        Grado,
+        Curso,
+        Matricula,
+        MatriculaCurso,
+        Asistencia,
+        Nota,
+        Alerta,
+    ]
 )

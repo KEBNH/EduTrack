@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse
@@ -19,6 +20,7 @@ from .forms import (
     NotaForm,
 )
 from .models import Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
+from .services import asignar_cursos_activos
 
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -175,6 +177,42 @@ class GradoListView(ListaInstitucionalMixin, ListView):
     model = Grado
     titulo = "Grados"
     url_crear = "academico:grado_crear"
+    template_name = "academico/grado_list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("tutor")
+        consulta = self.request.GET.get("q", "").strip()
+        nivel = self.request.GET.get("nivel", "").strip()
+        anio = self.request.GET.get("anio", "").strip()
+        estado = self.request.GET.get("estado", "").strip()
+        if consulta:
+            queryset = queryset.filter(
+                Q(nombre__icontains=consulta) | Q(seccion__icontains=consulta)
+            )
+        if nivel in Grado.Nivel.values:
+            queryset = queryset.filter(nivel=nivel)
+        if anio.isdigit():
+            queryset = queryset.filter(anio_academico=int(anio))
+        if estado == "ACTIVO":
+            queryset = queryset.filter(activo=True)
+        elif estado == "INACTIVO":
+            queryset = queryset.filter(activo=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "q": self.request.GET.get("q", "").strip(),
+                "nivel": self.request.GET.get("nivel", "").strip(),
+                "anio": self.request.GET.get("anio", "").strip(),
+                "estado": self.request.GET.get("estado", "").strip(),
+                "niveles": Grado.Nivel.choices,
+                "puede_editar": self.request.user.rol == CustomUser.Rol.PERSONAL_ACADEMICO,
+            }
+        )
+        return context
 
 
 class GradoCreateView(FormularioInstitucionalMixin, CreateView):
@@ -183,6 +221,7 @@ class GradoCreateView(FormularioInstitucionalMixin, CreateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Registrar grado"
     url_lista = "academico:grado_lista"
+    mensaje_exito = "Grado registrado correctamente."
 
 
 class GradoUpdateView(FormularioInstitucionalMixin, UpdateView):
@@ -191,12 +230,53 @@ class GradoUpdateView(FormularioInstitucionalMixin, UpdateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Editar grado"
     url_lista = "academico:grado_lista"
+    mensaje_exito = "Datos del grado actualizados correctamente."
 
 
 class CursoListView(ListaInstitucionalMixin, ListView):
     model = Curso
     titulo = "Cursos"
     url_crear = "academico:curso_crear"
+    template_name = "academico/curso_list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("grado", "profesor")
+        consulta = self.request.GET.get("q", "").strip()
+        grado = self.request.GET.get("grado", "").strip()
+        profesor = self.request.GET.get("profesor", "").strip()
+        estado = self.request.GET.get("estado", "").strip()
+        if consulta:
+            queryset = queryset.filter(
+                Q(codigo__icontains=consulta) | Q(nombre__icontains=consulta)
+            )
+        if grado.isdigit():
+            queryset = queryset.filter(grado_id=int(grado))
+        if profesor.isdigit():
+            queryset = queryset.filter(profesor_id=int(profesor))
+        if estado == "ACTIVO":
+            queryset = queryset.filter(activo=True)
+        elif estado == "INACTIVO":
+            queryset = queryset.filter(activo=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        institucion = self.request.user.institucion
+        context.update(
+            {
+                "q": self.request.GET.get("q", "").strip(),
+                "grado_seleccionado": self.request.GET.get("grado", "").strip(),
+                "profesor_seleccionado": self.request.GET.get("profesor", "").strip(),
+                "estado": self.request.GET.get("estado", "").strip(),
+                "grados": Grado.objects.filter(institucion=institucion),
+                "profesores": CustomUser.objects.filter(
+                    institucion=institucion, rol=CustomUser.Rol.PROFESOR
+                ).order_by("last_name", "first_name"),
+                "puede_editar": self.request.user.rol == CustomUser.Rol.PERSONAL_ACADEMICO,
+            }
+        )
+        return context
 
 
 class CursoCreateView(FormularioInstitucionalMixin, CreateView):
@@ -205,6 +285,7 @@ class CursoCreateView(FormularioInstitucionalMixin, CreateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Registrar curso"
     url_lista = "academico:curso_lista"
+    mensaje_exito = "Curso registrado correctamente."
 
 
 class CursoUpdateView(FormularioInstitucionalMixin, UpdateView):
@@ -213,6 +294,7 @@ class CursoUpdateView(FormularioInstitucionalMixin, UpdateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Editar curso"
     url_lista = "academico:curso_lista"
+    mensaje_exito = "Datos del curso actualizados correctamente."
 
 
 class MatriculaListView(ListaInstitucionalMixin, ListView):
@@ -227,6 +309,12 @@ class MatriculaCreateView(FormularioInstitucionalMixin, CreateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Matricular alumno"
     url_lista = "academico:matricula_lista"
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            response = super().form_valid(form)
+            asignar_cursos_activos(self.object)
+        return response
 
 
 class MatriculaUpdateView(FormularioInstitucionalMixin, UpdateView):
@@ -246,8 +334,8 @@ class AsistenciaListView(ListaInstitucionalMixin, ListView):
         queryset = super().get_queryset()
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
             queryset = queryset.filter(
-                matricula__grado__cursos__profesor=self.request.user
-            ).distinct()
+                matricula_curso__curso__profesor=self.request.user
+            )
         return queryset
 
 
@@ -270,8 +358,8 @@ class AsistenciaUpdateView(FormularioInstitucionalMixin, UpdateView):
         queryset = super().get_queryset()
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
             queryset = queryset.filter(
-                matricula__grado__cursos__profesor=self.request.user
-            ).distinct()
+                matricula_curso__curso__profesor=self.request.user
+            )
         return queryset
 
 
@@ -283,7 +371,7 @@ class NotaListView(ListaInstitucionalMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
-            queryset = queryset.filter(curso__profesor=self.request.user)
+            queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset
 
 
@@ -305,5 +393,5 @@ class NotaUpdateView(FormularioInstitucionalMixin, UpdateView):
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
-            queryset = queryset.filter(curso__profesor=self.request.user)
+            queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset

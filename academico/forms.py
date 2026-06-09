@@ -1,10 +1,20 @@
 from datetime import date
 
 from django import forms
+from django.db.models import Q
 
 from accounts.models import CustomUser
 
-from .models import Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
+from .models import (
+    Alumno,
+    Apoderado,
+    Asistencia,
+    Curso,
+    Grado,
+    Matricula,
+    MatriculaCurso,
+    Nota,
+)
 
 
 class FormularioInstitucional(forms.ModelForm):
@@ -94,27 +104,108 @@ class ApoderadoForm(FormularioInstitucional):
 class GradoForm(FormularioInstitucional):
     class Meta:
         model = Grado
-        fields = ("nivel", "nombre", "seccion", "anio_academico", "activo")
+        fields = ("nivel", "nombre", "seccion", "anio_academico", "tutor", "activo")
+        labels = {"anio_academico": "Anio academico"}
+        help_texts = {"anio_academico": "Ingrese un anio de cuatro digitos."}
+        widgets = {
+            "anio_academico": forms.NumberInput(attrs={"min": "1000", "max": "9999"}),
+            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        institucion = getattr(self.usuario_actual, "institucion", None)
+        tutores = CustomUser.objects.filter(
+            institucion=institucion, rol=CustomUser.Rol.PROFESOR, is_active=True
+        )
+        if self.instance.pk and self.instance.tutor_id:
+            tutores = CustomUser.objects.filter(
+                Q(
+                    institucion=institucion,
+                    rol=CustomUser.Rol.PROFESOR,
+                    is_active=True,
+                )
+                | Q(pk=self.instance.tutor_id)
+            )
+        self.fields["tutor"].queryset = tutores
+
+    def clean_nombre(self):
+        return " ".join(self.cleaned_data["nombre"].split())
+
+    def clean_seccion(self):
+        return " ".join(self.cleaned_data["seccion"].split())
+
+    def clean_anio_academico(self):
+        anio_academico = self.cleaned_data["anio_academico"]
+        if anio_academico < 1000 or anio_academico > 9999:
+            raise forms.ValidationError(
+                "El anio academico debe contener exactamente cuatro digitos."
+            )
+        return anio_academico
+
+    def clean(self):
+        cleaned_data = super().clean()
+        campos = ("nivel", "nombre", "seccion", "anio_academico")
+        if all(cleaned_data.get(campo) not in (None, "") for campo in campos):
+            duplicado = Grado.objects.filter(
+                institucion_id=self.instance.institucion_id,
+                nivel=cleaned_data["nivel"],
+                nombre=cleaned_data["nombre"],
+                seccion=cleaned_data["seccion"],
+                anio_academico=cleaned_data["anio_academico"],
+            ).exclude(pk=self.instance.pk)
+            if duplicado.exists():
+                raise forms.ValidationError(
+                    "Ya existe este grado y seccion para el anio academico indicado."
+                )
+        return cleaned_data
 
 
 class CursoForm(FormularioInstitucional):
     class Meta:
         model = Curso
         fields = ("nombre", "codigo", "grado", "profesor", "activo")
+        help_texts = {
+            "codigo": "El codigo y el nombre no pueden repetirse dentro del grado."
+        }
+        widgets = {
+            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         institucion = getattr(self.usuario_actual, "institucion", None)
-        self.fields["grado"].queryset = Grado.objects.filter(institucion=institucion)
-        self.fields["profesor"].queryset = CustomUser.objects.filter(
+        grados = Grado.objects.filter(institucion=institucion, activo=True)
+        profesores = CustomUser.objects.filter(
             institucion=institucion, rol=CustomUser.Rol.PROFESOR, is_active=True
         )
+        if self.instance.pk:
+            grados = Grado.objects.filter(
+                Q(institucion=institucion, activo=True) | Q(pk=self.instance.grado_id)
+            )
+            if self.instance.profesor_id:
+                profesores = CustomUser.objects.filter(
+                    Q(
+                        institucion=institucion,
+                        rol=CustomUser.Rol.PROFESOR,
+                        is_active=True,
+                    )
+                    | Q(pk=self.instance.profesor_id)
+                )
+        self.fields["grado"].queryset = grados
+        self.fields["profesor"].queryset = profesores
+
+    def clean_nombre(self):
+        return " ".join(self.cleaned_data["nombre"].split())
+
+    def clean_codigo(self):
+        return " ".join(self.cleaned_data["codigo"].upper().split())
 
 
 class MatriculaForm(FormularioInstitucional):
     class Meta:
         model = Matricula
-        fields = ("alumno", "grado", "anio_academico", "estado")
+        fields = ("alumno", "grado", "estado")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -125,35 +216,93 @@ class MatriculaForm(FormularioInstitucional):
         self.fields["grado"].queryset = Grado.objects.filter(
             institucion=institucion, activo=True
         )
+        if self.instance.pk:
+            self.fields["alumno"].queryset = Alumno.objects.filter(
+                Q(institucion=institucion, activo=True) | Q(pk=self.instance.alumno_id)
+            )
+            self.fields["grado"].queryset = Grado.objects.filter(
+                Q(institucion=institucion, activo=True) | Q(pk=self.instance.grado_id)
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.pk:
+            if (
+                cleaned_data.get("alumno")
+                and cleaned_data["alumno"].pk != self.instance.alumno_id
+            ):
+                self.add_error(
+                    "alumno",
+                    "No se puede cambiar el alumno de una matricula existente.",
+                )
+            if (
+                cleaned_data.get("grado")
+                and cleaned_data["grado"].pk != self.instance.grado_id
+            ):
+                self.add_error(
+                    "grado",
+                    "No se puede cambiar el grado de una matricula existente.",
+                )
+        return cleaned_data
 
 
 class AsistenciaForm(FormularioInstitucional):
     class Meta:
         model = Asistencia
-        fields = ("matricula", "fecha", "estado", "observacion")
+        fields = ("matricula_curso", "fecha", "estado", "observacion")
+        labels = {"matricula_curso": "Alumno y curso"}
         widgets = {"fecha": forms.DateInput(attrs={"type": "date"})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         institucion = getattr(self.usuario_actual, "institucion", None)
-        matriculas = Matricula.objects.filter(institucion=institucion, estado="ACTIVA")
+        matriculas_curso = MatriculaCurso.objects.filter(
+            institucion=institucion, matricula__estado=Matricula.Estado.ACTIVA
+        ).select_related("matricula__alumno", "curso")
         if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
-            matriculas = matriculas.filter(grado__cursos__profesor=self.usuario_actual).distinct()
-        self.fields["matricula"].queryset = matriculas
+            matriculas_curso = matriculas_curso.filter(curso__profesor=self.usuario_actual)
+        if self.instance.pk:
+            matriculas_curso = MatriculaCurso.objects.filter(
+                Q(
+                    institucion=institucion,
+                    matricula__estado=Matricula.Estado.ACTIVA,
+                )
+                | Q(pk=self.instance.matricula_curso_id)
+            )
+            if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
+                matriculas_curso = matriculas_curso.filter(
+                    curso__profesor=self.usuario_actual
+                )
+        self.fields["matricula_curso"].queryset = matriculas_curso
 
 
 class NotaForm(FormularioInstitucional):
     class Meta:
         model = Nota
-        fields = ("matricula", "curso", "periodo", "evaluacion", "calificacion")
+        fields = ("matricula_curso", "periodo", "evaluacion", "calificacion")
+        labels = {"matricula_curso": "Alumno y curso"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         institucion = getattr(self.usuario_actual, "institucion", None)
-        matriculas = Matricula.objects.filter(institucion=institucion, estado="ACTIVA")
-        cursos = Curso.objects.filter(institucion=institucion, activo=True)
+        matriculas_curso = MatriculaCurso.objects.filter(
+            institucion=institucion,
+            matricula__estado=Matricula.Estado.ACTIVA,
+            curso__activo=True,
+        ).select_related("matricula__alumno", "curso")
         if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
-            cursos = cursos.filter(profesor=self.usuario_actual)
-            matriculas = matriculas.filter(grado__cursos__in=cursos).distinct()
-        self.fields["matricula"].queryset = matriculas
-        self.fields["curso"].queryset = cursos
+            matriculas_curso = matriculas_curso.filter(curso__profesor=self.usuario_actual)
+        if self.instance.pk:
+            matriculas_curso = MatriculaCurso.objects.filter(
+                Q(
+                    institucion=institucion,
+                    matricula__estado=Matricula.Estado.ACTIVA,
+                    curso__activo=True,
+                )
+                | Q(pk=self.instance.matricula_curso_id)
+            )
+            if getattr(self.usuario_actual, "rol", None) == CustomUser.Rol.PROFESOR:
+                matriculas_curso = matriculas_curso.filter(
+                    curso__profesor=self.usuario_actual
+                )
+        self.fields["matricula_curso"].queryset = matriculas_curso
