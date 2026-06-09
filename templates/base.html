@@ -827,47 +827,26 @@
                             <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown" data-bs-offset="0,19" type="button" aria-haspopup="false" aria-expanded="false">
                                 <img src="{% static 'img/avatar-7.jpg' %}" width="32" class="rounded-circle me-lg-2 d-flex" alt="user-image">
                                 <span class="d-lg-flex flex-column gap-1 d-none">
-                                    <h5 class="my-0 fs-13 fw-semibold">Kevin M.</h5>
+                                    <h5 class="my-0 fs-13 fw-semibold">
+                                        {{ request.user.get_full_name|default:request.user.email }}
+                                    </h5>
+                                    <small class="text-muted">{{ request.user.get_rol_display|default:"Sin rol asignado" }}</small>
                                 </span>
                                 <i class="ti ti-chevron-down d-none d-lg-block align-middle ms-2"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
                                 <!-- item-->
                                 <div class="dropdown-header noti-title">
-                                    <h6 class="text-overflow m-0">Welcome !</h6>
+                                    <h6 class="text-overflow m-0">{{ request.user.email }}</h6>
                                 </div>
 
                                 <!-- item-->
                                 <a href="javascript:void(0);" class="dropdown-item">
                                     <i class="ti ti-user-hexagon me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">My Account</span>
-                                </a>
-
-                                <!-- item-->
-                                <a href="javascript:void(0);" class="dropdown-item">
-                                    <i class="ti ti-wallet me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">Wallet : <span class="fw-semibold">$985.25</span></span>
-                                </a>
-
-                                <!-- item-->
-                                <a href="javascript:void(0);" class="dropdown-item">
-                                    <i class="ti ti-settings me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">Settings</span>
-                                </a>
-
-                                <!-- item-->
-                                <a href="javascript:void(0);" class="dropdown-item">
-                                    <i class="ti ti-lifebuoy me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">Support</span>
+                                    <span class="align-middle">{{ request.user.get_rol_display|default:"Sin rol asignado" }}</span>
                                 </a>
 
                                 <div class="dropdown-divider"></div>
-
-                                <!-- item-->
-                                <a href="javascript:void(0);" class="dropdown-item">
-                                    <i class="ti ti-lock-square-rounded me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">Lock Screen</span>
-                                </a>
 
                                 <!-- item-->
                                 <form method="post" action="{% url 'accounts:logout' %}">

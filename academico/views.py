@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView
 
 from accounts.models import CustomUser
+from accounts.services import capacidades_para
 
 from .forms import (
     AlumnoForm,
@@ -30,7 +31,11 @@ ROLES_LECTURA_ACADEMICA = {
 
 @login_required
 def inicio(request):
-    return render(request, "bashboard.html")
+    return render(
+        request,
+        "bashboard.html",
+        {"capacidades": capacidades_para(request.user)},
+    )
 
 
 class PermisoRolMixin(LoginRequiredMixin, UserPassesTestMixin):

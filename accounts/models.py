@@ -61,3 +61,11 @@ class CustomUser(AbstractUser):
             return "PENDIENTE"
         return "ACTIVO"
 
+    @property
+    def estado_cuenta_display(self):
+        estados = {
+            "INACTIVO": "Inactivo",
+            "PENDIENTE": "Activación pendiente",
+            "ACTIVO": "Activo",
+        }
+        return estados[self.estado_cuenta]

@@ -11,7 +11,7 @@
         {% elif usuario_objetivo %}
         <p class="text-muted">
             Rol: {{ usuario_objetivo.get_rol_display }} |
-            Estado: {{ usuario_objetivo.estado_cuenta }}
+            Estado: {{ usuario_objetivo.estado_cuenta_display }}
         </p>
         {% endif %}
         <form method="post">

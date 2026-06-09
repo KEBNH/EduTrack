@@ -43,7 +43,7 @@
             <div class="col-md-2">
                 <select class="form-select" name="estado">
                     <option value="">Todos los estados</option>
-                    <option value="PENDIENTE" {% if estado == "PENDIENTE" %}selected{% endif %}>Pendiente</option>
+                    <option value="PENDIENTE" {% if estado == "PENDIENTE" %}selected{% endif %}>Activación pendiente</option>
                     <option value="ACTIVO" {% if estado == "ACTIVO" %}selected{% endif %}>Activo</option>
                     <option value="INACTIVO" {% if estado == "INACTIVO" %}selected{% endif %}>Inactivo</option>
                 </select>
@@ -78,11 +78,11 @@
                     <td>{{ usuario.get_rol_display }}</td>
                     <td>
                         {% if usuario.estado_cuenta == "PENDIENTE" %}
-                        <span class="badge bg-warning-subtle text-warning">Pendiente de activacion</span>
+                        <span class="badge bg-warning-subtle text-warning">{{ usuario.estado_cuenta_display }}</span>
                         {% elif usuario.estado_cuenta == "ACTIVO" %}
-                        <span class="badge bg-success-subtle text-success">Activo</span>
+                        <span class="badge bg-success-subtle text-success">{{ usuario.estado_cuenta_display }}</span>
                         {% else %}
-                        <span class="badge bg-danger-subtle text-danger">Inactivo</span>
+                        <span class="badge bg-danger-subtle text-danger">{{ usuario.estado_cuenta_display }}</span>
                         {% endif %}
                     </td>
                     <td>

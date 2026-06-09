@@ -1,9 +1,15 @@
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from academico.models import Institucion
 
 from .models import CustomUser
+from .tokens import activation_token_generator
 
 
 ROLES_QUE_PUEDE_CREAR = {
@@ -22,6 +28,32 @@ ROLES_CON_INSTITUCION = {
     CustomUser.Rol.APODERADO,
 }
 
+CAPACIDADES_POR_ROL = {
+    CustomUser.Rol.IT: [
+        "Crear y gestionar usuarios empleados del MINEDU.",
+        "Supervisar el acceso inicial de los usuarios del sistema.",
+    ],
+    CustomUser.Rol.MINEDU: [
+        "Crear y gestionar usuarios con rol Director.",
+        "Asignar directores a la institucion educativa activa.",
+    ],
+    CustomUser.Rol.DIRECTOR: [
+        "Crear y gestionar profesores y personal academico de su institucion.",
+        "Consultar alumnos, apoderados, grados, cursos, matriculas, asistencias y notas.",
+    ],
+    CustomUser.Rol.PROFESOR: [
+        "Consultar la informacion academica de su institucion.",
+        "Registrar y actualizar asistencias y notas de sus cursos.",
+    ],
+    CustomUser.Rol.PERSONAL_ACADEMICO: [
+        "Gestionar alumnos, apoderados, grados, cursos y matriculas.",
+        "Registrar y actualizar asistencias y notas.",
+    ],
+    CustomUser.Rol.APODERADO: [
+        "Actualmente no tiene modulos de consulta habilitados.",
+    ],
+}
+
 
 def puede_crear_usuario(usuario_actual, rol_objetivo):
     if not usuario_actual.is_authenticated or not usuario_actual.is_active:
@@ -31,6 +63,10 @@ def puede_crear_usuario(usuario_actual, rol_objetivo):
 
 def roles_permitidos_para(usuario_actual):
     return ROLES_QUE_PUEDE_CREAR.get(usuario_actual.rol, set())
+
+
+def capacidades_para(usuario_actual):
+    return CAPACIDADES_POR_ROL.get(usuario_actual.rol, [])
 
 
 def puede_gestionar_usuario(usuario_actual, usuario_objetivo):
@@ -90,3 +126,17 @@ def crear_usuario(*, usuario_actual, datos):
     usuario.set_unusable_password()
     usuario.save()
     return usuario
+
+
+def enviar_correo_activacion(*, usuario, request):
+    uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+    token = activation_token_generator.make_token(usuario)
+    activation_url = request.build_absolute_uri(
+        reverse("accounts:activar_cuenta", kwargs={"uidb64": uid, "token": token})
+    )
+    contexto = {"usuario": usuario, "activation_url": activation_url}
+    asunto = render_to_string(
+        "accounts/activation_email_subject.txt", contexto
+    ).strip()
+    mensaje = render_to_string("accounts/activation_email.txt", contexto)
+    send_mail(asunto, mensaje, None, [usuario.email])

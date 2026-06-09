@@ -130,3 +130,9 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'accounts:login'
+
+# Durante el desarrollo los correos se imprimen en la consola de runserver.
+# Para produccion, este backend puede sustituirse por SMTP sin cambiar el flujo
+# de activacion de cuentas.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "EduTrack <no-reply@edutrack.local>"

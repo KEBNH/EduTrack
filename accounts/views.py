@@ -3,14 +3,19 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 
-from .forms import CustomUserCreationForm, CustomUserUpdateForm
+from .forms import ActivarCuentaForm, CustomUserCreationForm, CustomUserUpdateForm
+from .models import CustomUser
 from .services import (
     crear_usuario,
+    enviar_correo_activacion,
     puede_gestionar_usuario,
     roles_permitidos_para,
     usuarios_gestionables_por,
 )
+from .tokens import activation_token_generator
 
 
 def _validar_acceso_panel(usuario):
@@ -72,11 +77,15 @@ def usuario_crear(request):
         form = CustomUserCreationForm(request.POST, usuario_actual=request.user)
         if form.is_valid():
             try:
-                crear_usuario(usuario_actual=request.user, datos=form.cleaned_data)
+                usuario = crear_usuario(usuario_actual=request.user, datos=form.cleaned_data)
+                enviar_correo_activacion(usuario=usuario, request=request)
             except ValidationError as exc:
                 form.add_error(None, exc)
             else:
-                messages.success(request, "Usuario creado. Su cuenta esta pendiente de activacion.")
+                messages.success(
+                    request,
+                    "Usuario creado. Se genero el correo para activar su cuenta.",
+                )
                 return redirect("accounts:usuario_lista")
     else:
         form = CustomUserCreationForm(usuario_actual=request.user)
@@ -124,3 +133,31 @@ def usuario_cambiar_estado(request, codigo_unico):
     usuario.save(update_fields=("is_active", "fmodificacion"))
     messages.success(request, "Estado del usuario actualizado.")
     return redirect("accounts:usuario_lista")
+
+
+def activar_cuenta(request, uidb64, token):
+    try:
+        usuario_id = force_str(urlsafe_base64_decode(uidb64))
+        usuario = CustomUser.objects.get(pk=usuario_id)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        usuario = None
+
+    token_valido = (
+        usuario is not None
+        and usuario.is_active
+        and not usuario.has_usable_password()
+        and activation_token_generator.check_token(usuario, token)
+    )
+    if not token_valido:
+        return render(request, "accounts/activate.html", {"enlace_invalido": True})
+
+    if request.method == "POST":
+        form = ActivarCuentaForm(usuario, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cuenta activada. Ya puede iniciar sesion.")
+            return redirect("accounts:login")
+    else:
+        form = ActivarCuentaForm(usuario)
+
+    return render(request, "accounts/activate.html", {"form": form})
