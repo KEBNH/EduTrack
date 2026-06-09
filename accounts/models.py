@@ -60,3 +60,4 @@ class CustomUser(AbstractUser):
         if not self.has_usable_password():
             return "PENDIENTE"
         return "ACTIVO"
+
