@@ -1,11 +1,29 @@
-from django.contrib import admin
 from django.urls import path
-from .views import EmployeeListView, EmployeeCreateView, EmployeeUpdateView, EmployeeDeleteView, inicio
+
+from . import views
+
+app_name = "academico"
 
 urlpatterns = [
-    path('', inicio),
-    path('employee/', EmployeeListView.as_view(), name='employee_list'),
-    path('employee-create/', EmployeeCreateView.as_view(), name='employee_create'),
-    path('employee-edit/<str:codigo_unico>', EmployeeUpdateView.as_view(), name='employee_edit'),
-    path('employee-delete/<str:codigo_unico>', EmployeeDeleteView.as_view(), name='employee_delete'),
+    path("alumnos/", views.AlumnoListView.as_view(), name="alumno_lista"),
+    path("alumnos/crear/", views.AlumnoCreateView.as_view(), name="alumno_crear"),
+    path("alumnos/<int:pk>/editar/", views.AlumnoUpdateView.as_view(), name="alumno_editar"),
+    path("apoderados/", views.ApoderadoListView.as_view(), name="apoderado_lista"),
+    path("apoderados/crear/", views.ApoderadoCreateView.as_view(), name="apoderado_crear"),
+    path("apoderados/<int:pk>/editar/", views.ApoderadoUpdateView.as_view(), name="apoderado_editar"),
+    path("grados/", views.GradoListView.as_view(), name="grado_lista"),
+    path("grados/crear/", views.GradoCreateView.as_view(), name="grado_crear"),
+    path("grados/<int:pk>/editar/", views.GradoUpdateView.as_view(), name="grado_editar"),
+    path("cursos/", views.CursoListView.as_view(), name="curso_lista"),
+    path("cursos/crear/", views.CursoCreateView.as_view(), name="curso_crear"),
+    path("cursos/<int:pk>/editar/", views.CursoUpdateView.as_view(), name="curso_editar"),
+    path("matriculas/", views.MatriculaListView.as_view(), name="matricula_lista"),
+    path("matriculas/crear/", views.MatriculaCreateView.as_view(), name="matricula_crear"),
+    path("matriculas/<int:pk>/editar/", views.MatriculaUpdateView.as_view(), name="matricula_editar"),
+    path("asistencias/", views.AsistenciaListView.as_view(), name="asistencia_lista"),
+    path("asistencias/crear/", views.AsistenciaCreateView.as_view(), name="asistencia_crear"),
+    path("asistencias/<int:pk>/editar/", views.AsistenciaUpdateView.as_view(), name="asistencia_editar"),
+    path("notas/", views.NotaListView.as_view(), name="nota_lista"),
+    path("notas/crear/", views.NotaCreateView.as_view(), name="nota_crear"),
+    path("notas/<int:pk>/editar/", views.NotaUpdateView.as_view(), name="nota_editar"),
 ]
