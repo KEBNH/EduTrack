@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,23 @@ SECRET_KEY = 'django-insecure-%d(p4w--+ej=p99#=koq70lo%7q&l!xoh&r!9vlrw&yusb(dm=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1,edutrack-dev-server.onrender.com,edutrack-prod-server.onrender.com",
+    ).split(",")
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://edutrack-dev-server.onrender.com,https://edutrack-prod-server.onrender.com",
+    ).split(",")
+    if origin.strip()
+]
 
 
 # Application definition
