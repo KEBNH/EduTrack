@@ -33,8 +33,10 @@ jobs:
       - name: Verificar configuracion de Django
         run: python manage.py check
 
-      - name: Ejecutar tests
-        run: python manage.py test
+      - name: Ejecutar tests con coverage minimo 80%
+        run: |
+          python -m coverage run manage.py test
+          python -m coverage report
 
       - name: Analisis de seguridad con Bandit
         run: bandit -r . -ll -ii --exclude ".venv,static,templates,db.sqlite3,**/migrations,**/__pycache__"
