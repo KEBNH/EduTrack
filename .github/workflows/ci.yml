@@ -83,17 +83,18 @@ jobs:
     steps:
       - name: Verificar que Dev responde
         run: |
-          for i in 1 2 3 4 5; do
+          URL="https://edutrack-dev-server.onrender.com/accounts/login/"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://edutrack-dev-server.onrender.com/)
+              "$URL")
             if [[ "$STATUS" -eq 200 ]]; then
-              echo "Dev responde correctamente (HTTP $STATUS)"
+              echo "Dev responde correctamente en $URL (HTTP $STATUS)"
               exit 0
             fi
             echo "Intento $i fallido (HTTP $STATUS), reintentando..."
-            sleep 10
+            sleep 15
           done
-          echo "Dev no responde despues de 5 intentos"
+          echo "Dev no responde despues de 10 intentos"
           exit 1
 
   verify-dev-before-prod:
@@ -105,17 +106,18 @@ jobs:
     steps:
       - name: Verificar que Dev responde
         run: |
-          for i in 1 2 3 4 5; do
+          URL="https://edutrack-dev-server.onrender.com/accounts/login/"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://edutrack-dev-server.onrender.com/)
+              "$URL")
             if [[ "$STATUS" -eq 200 ]]; then
-              echo "Dev responde correctamente (HTTP $STATUS)"
+              echo "Dev responde correctamente en $URL (HTTP $STATUS)"
               exit 0
             fi
             echo "Intento $i fallido (HTTP $STATUS), reintentando..."
-            sleep 10
+            sleep 15
           done
-          echo "Dev no responde despues de 5 intentos"
+          echo "Dev no responde despues de 10 intentos"
           exit 1
 
   deploy-prod:
