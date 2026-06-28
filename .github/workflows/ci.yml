@@ -9,6 +9,18 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "Ambiente a desplegar manualmente"
+        required: true
+        default: development
+        type: choice
+        options:
+          - development
+          - production
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -20,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -45,7 +57,13 @@ jobs:
     name: Deploy a Desarrollo
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'development') }}
+    environment:
+      name: development
+      url: https://edutrack-dev-server.onrender.com
+    concurrency:
+      group: render-development
+      cancel-in-progress: true
 
     steps:
       - name: Deploy a Dev en Render
@@ -60,7 +78,29 @@ jobs:
     name: Smoke Test en Dev
     needs: deploy-dev
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'development') }}
+
+    steps:
+      - name: Verificar que Dev responde
+        run: |
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://edutrack-dev-server.onrender.com/)
+            if [[ "$STATUS" -eq 200 ]]; then
+              echo "Dev responde correctamente (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Intento $i fallido (HTTP $STATUS), reintentando..."
+            sleep 10
+          done
+          echo "Dev no responde despues de 5 intentos"
+          exit 1
+
+  verify-dev-before-prod:
+    name: Verificar Dev antes de Produccion
+    needs: test
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
 
     steps:
       - name: Verificar que Dev responde
@@ -80,9 +120,15 @@ jobs:
 
   deploy-prod:
     name: Deploy a Produccion
-    needs: smoke-test-dev
+    needs: verify-dev-before-prod
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
+    environment:
+      name: production
+      url: https://edutrack-prod-server.onrender.com
+    concurrency:
+      group: render-production
+      cancel-in-progress: false
 
     steps:
       - name: Deploy a Prod en Render
