@@ -4,5 +4,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.coverage
 *.sqlite3
 *.log

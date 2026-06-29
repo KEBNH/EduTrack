@@ -9,5 +9,3 @@ urlpatterns = [
     path('', inicio, name='inicio'),
     path('academico/', include('academico.urls')),
 ]
-
-# Mi primer commit
