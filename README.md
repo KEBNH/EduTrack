@@ -34,24 +34,18 @@ La plataforma busca transformar el modelo reactivo tradicional en un enfoque pre
 
 ## Version de Python
 
-El proyecto fija la version de Python con `.python-version`:
+El proyecto requiere Python 3.11.
 
-```text
-3.11
-```
-
-Con `pyenv` o `pyenv-win`, al entrar a la carpeta del repositorio se selecciona automaticamente Python 3.11 si esta instalado.
-
-Instalar la version:
-
-```bash
-pyenv install 3.11
-```
-
-Verificar:
+Verificar la version instalada:
 
 ```bash
 python --version
+```
+
+Si usas `pyenv` o `pyenv-win`, puedes instalar Python 3.11 con:
+
+```bash
+pyenv install 3.11
 ```
 
 | Tecnología | Propósito |
