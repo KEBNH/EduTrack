@@ -1,12 +1,12 @@
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView
-
 from accounts.models import CustomUser
 from accounts.services import capacidades_para
 
@@ -19,7 +19,7 @@ from .forms import (
     MatriculaForm,
     NotaForm,
 )
-from .models import Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
+from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
 from .services import asignar_cursos_activos
 
 
@@ -395,3 +395,99 @@ class NotaUpdateView(FormularioInstitucionalMixin, UpdateView):
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
             queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset
+
+ROLES_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PROFESOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+}
+
+ROLES_CIERRE_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+}
+
+
+class AlertaListView(ListaInstitucionalMixin, ListView):
+    model = Alerta
+    roles_permitidos = ROLES_ALERTAS
+    titulo = "Alertas SAT"
+    url_crear = ""
+    template_name = "academico/alerta_list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = (
+            super()
+            .get_queryset()
+            .select_related("alumno", "institucion")
+        )
+
+        tipo = self.request.GET.get("tipo", "").strip()
+        nivel = self.request.GET.get("nivel", "").strip()
+        estado = self.request.GET.get("estado", "").strip()
+        alumno = self.request.GET.get("alumno", "").strip()
+
+        if self.request.user.rol == CustomUser.Rol.PROFESOR:
+            queryset = queryset.filter(
+                alumno__matriculas__cursos_matriculados__curso__profesor=self.request.user
+            ).distinct()
+
+        if tipo in Alerta.Tipo.values:
+            queryset = queryset.filter(tipo=tipo)
+
+        if nivel in Alerta.NivelRiesgo.values:
+            queryset = queryset.filter(nivel_riesgo=nivel)
+
+        if estado == "ACTIVA":
+            queryset = queryset.filter(activa=True)
+        elif estado == "CERRADA":
+            queryset = queryset.filter(activa=False)
+
+        if alumno:
+            queryset = queryset.filter(
+                Q(alumno__dni__icontains=alumno)
+                | Q(alumno__nombres__icontains=alumno)
+                | Q(alumno__apellidos__icontains=alumno)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "tipos": Alerta.Tipo.choices,
+                "niveles": Alerta.NivelRiesgo.choices,
+                "tipo": self.request.GET.get("tipo", "").strip(),
+                "nivel": self.request.GET.get("nivel", "").strip(),
+                "estado": self.request.GET.get("estado", "").strip(),
+                "alumno": self.request.GET.get("alumno", "").strip(),
+                "puede_cerrar": self.request.user.rol in ROLES_CIERRE_ALERTAS,
+            }
+        )
+        return context
+
+
+@login_required
+def alerta_cerrar(request, pk):
+    if request.method != "POST":
+        raise PermissionDenied("Accion no permitida.")
+
+    if (
+        not request.user.is_active
+        or request.user.rol not in ROLES_CIERRE_ALERTAS
+        or request.user.institucion_id is None
+    ):
+        raise PermissionDenied("No tiene permiso para cerrar alertas.")
+
+    alerta = get_object_or_404(
+        Alerta,
+        pk=pk,
+        institucion=request.user.institucion,
+        activa=True,
+    )
+    alerta.activa = False
+    alerta.save(update_fields=("activa", "fmodificacion"))
+    messages.success(request, "Alerta cerrada correctamente.")
+    return redirect("academico:alerta_lista")

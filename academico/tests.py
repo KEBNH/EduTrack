@@ -1338,3 +1338,157 @@ class MotorSATTests(TestCase):
 
         self.assertFalse(Alerta.objects.filter(alumno=self.alumno).exists())
         self.assertIn("fuera del anio escolar activo", salida.getvalue())
+
+class VisualizacionAlertasTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(
+            nombre="Colegio Alertas", codigo="IE-ALERTAS"
+        )
+        self.otra_institucion = Institucion.objects.create(
+            nombre="Colegio Externo Alertas", codigo="IE-ALERTAS-EXT"
+        )
+        self.director = CustomUser.objects.create_user(
+            email="director-alertas@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="33334444",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor-alertas@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="33334445",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.personal = CustomUser.objects.create_user(
+            email="personal-alertas@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="33334446",
+            rol=CustomUser.Rol.PERSONAL_ACADEMICO,
+            institucion=self.institucion,
+        )
+        self.apoderado = CustomUser.objects.create_user(
+            email="apoderado-alertas@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="33334447",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="44445555",
+            nombres="Rosa",
+            apellidos="Alerta",
+            fecha_nacimiento=date(2012, 6, 10),
+        )
+        self.alumno_externo = Alumno.objects.create(
+            institucion=self.otra_institucion,
+            dni="44445556",
+            nombres="Alumno",
+            apellidos="Externo",
+            fecha_nacimiento=date(2012, 7, 10),
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="Primero",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Comunicacion",
+            codigo="AL-COM",
+            grado=self.grado,
+            profesor=self.profesor,
+        )
+        self.matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        MatriculaCurso.objects.create(
+            institucion=self.institucion,
+            matricula=self.matricula,
+            curso=self.curso,
+        )
+        self.alerta = Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Promedio bajo detectado.",
+        )
+        self.alerta_externa = Alerta.objects.create(
+            institucion=self.otra_institucion,
+            alumno=self.alumno_externo,
+            tipo=Alerta.Tipo.ASISTENCIA,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Alerta externa.",
+        )
+
+    def test_lista_alertas_muestra_solo_institucion_del_usuario(self):
+        self.client.force_login(self.director)
+
+        response = self.client.get(reverse("academico:alerta_lista"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta externa.")
+
+    def test_lista_alertas_permite_filtrar_por_tipo_nivel_estado_y_alumno(self):
+        self.client.force_login(self.director)
+
+        response = self.client.get(
+            reverse("academico:alerta_lista"),
+            {
+                "tipo": Alerta.Tipo.RENDIMIENTO,
+                "nivel": Alerta.NivelRiesgo.ALTO,
+                "estado": "ACTIVA",
+                "alumno": "Rosa",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Promedio bajo detectado.")
+
+    def test_apoderado_no_puede_ver_alertas(self):
+        self.client.force_login(self.apoderado)
+
+        response = self.client.get(reverse("academico:alerta_lista"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_personal_puede_cerrar_alerta_con_post(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:alerta_cerrar", args=[self.alerta.pk])
+        )
+
+        self.assertRedirects(response, reverse("academico:alerta_lista"))
+        self.alerta.refresh_from_db()
+        self.assertFalse(self.alerta.activa)
+
+    def test_profesor_no_puede_cerrar_alerta(self):
+        self.client.force_login(self.profesor)
+
+        response = self.client.post(
+            reverse("academico:alerta_cerrar", args=[self.alerta.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.alerta.refresh_from_db()
+        self.assertTrue(self.alerta.activa)
+
+    def test_cerrar_alerta_requiere_post(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.get(
+            reverse("academico:alerta_cerrar", args=[self.alerta.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.alerta.refresh_from_db()
+        self.assertTrue(self.alerta.activa)
