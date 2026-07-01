@@ -255,6 +255,8 @@ class AsistenciaForm(FormularioInstitucional):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields["fecha"].initial = date.today().isoformat()
         institucion = getattr(self.usuario_actual, "institucion", None)
         matriculas_curso = MatriculaCurso.objects.filter(
             institucion=institucion, matricula__estado=Matricula.Estado.ACTIVA

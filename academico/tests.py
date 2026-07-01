@@ -478,6 +478,67 @@ class FlujoMatriculaCursoTests(TestCase):
         self.assertNotIn(curso_ajeno, asistencia_form.fields["matricula_curso"].queryset)
         self.assertIn(curso_propio, nota_form.fields["matricula_curso"].queryset)
         self.assertNotIn(curso_ajeno, nota_form.fields["matricula_curso"].queryset)
+    
+    def test_formulario_asistencia_usa_fecha_actual_por_defecto(self):
+        form = AsistenciaForm(usuario_actual=self.profesor)
+
+        self.assertEqual(form.fields["fecha"].initial, date.today().isoformat())
+
+    def test_formulario_asistencia_rechaza_registro_duplicado(self):
+        matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion,
+            matricula=matricula,
+            curso=self.curso_activo,
+        )
+        Asistencia.objects.create(
+            institucion=self.institucion,
+            matricula_curso=matricula_curso,
+            fecha=date(2026, 6, 10),
+            estado=Asistencia.Estado.PRESENTE,
+        )
+
+        form = AsistenciaForm(
+            {
+                "matricula_curso": matricula_curso.pk,
+                "fecha": "2026-06-10",
+                "estado": Asistencia.Estado.FALTA,
+                "observacion": "Duplicada",
+            },
+            usuario_actual=self.profesor,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("__all__", form.errors)
+
+    def test_formulario_nota_rechaza_calificacion_fuera_de_rango(self):
+        matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion,
+            matricula=matricula,
+            curso=self.curso_activo,
+        )
+
+        form = NotaForm(
+            {
+                "matricula_curso": matricula_curso.pk,
+                "periodo": Nota.Periodo.SEGUNDO,
+                "evaluacion": "Examen invalido",
+                "calificacion": "25.00",
+            },
+            usuario_actual=self.profesor,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("calificacion", form.errors)
 
 
 class FlujoAlumnosTests(TestCase):
