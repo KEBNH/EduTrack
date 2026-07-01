@@ -1,6 +1,7 @@
 from datetime import date
-
+from io import StringIO
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
@@ -1144,3 +1145,196 @@ class FlujoCursosTests(TestCase):
         curso_inactivo.refresh_from_db()
         self.assertFalse(curso_inactivo.activo)
         self.assertContains(response, "Datos del curso actualizados correctamente.")
+
+class MotorSATTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(
+            nombre="Colegio SAT", codigo="IE-SAT"
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor-sat@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="11112222",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="22223333",
+            nombres="Valeria",
+            apellidos="SAT",
+            fecha_nacimiento=date(2012, 3, 10),
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="Primero",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Matematica",
+            codigo="SAT-MAT",
+            grado=self.grado,
+            profesor=self.profesor,
+        )
+        self.matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        self.matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion,
+            matricula=self.matricula,
+            curso=self.curso,
+        )
+
+    def registrar_asistencias(self, estados):
+        for indice, estado in enumerate(estados, start=1):
+            Asistencia.objects.create(
+                institucion=self.institucion,
+                matricula_curso=self.matricula_curso,
+                fecha=date(2026, 6, indice),
+                estado=estado,
+            )
+
+    def registrar_nota(self, calificacion, evaluacion="Practica 1"):
+        Nota.objects.create(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            periodo=Nota.Periodo.SEGUNDO,
+            evaluacion=evaluacion,
+            calificacion=calificacion,
+        )
+
+    def test_alumno_sin_riesgo_no_genera_alerta(self):
+        self.registrar_asistencias(
+            [
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+            ]
+        )
+        self.registrar_nota("16.00")
+
+        from .services import generar_alertas_sat
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        self.assertFalse(Alerta.objects.filter(alumno=self.alumno, activa=True).exists())
+
+    def test_faltas_generan_alerta_de_asistencia(self):
+        self.registrar_asistencias(
+            [
+                Asistencia.Estado.FALTA,
+                Asistencia.Estado.FALTA,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+            ]
+        )
+        self.registrar_nota("16.00")
+
+        from .services import generar_alertas_sat
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.ASISTENCIA)
+        self.assertTrue(alerta.activa)
+        self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.ALTO)
+        self.assertIn("40.00% de faltas", alerta.descripcion)
+
+    def test_notas_bajas_generan_alerta_de_rendimiento(self):
+        self.registrar_asistencias(
+            [
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+            ]
+        )
+        self.registrar_nota("12.00")
+
+        from .services import generar_alertas_sat
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.RENDIMIENTO)
+        self.assertTrue(alerta.activa)
+        self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.ALTO)
+        self.assertIn("promedio general 12.00", alerta.descripcion)
+
+    def test_alerta_existente_se_actualiza_y_no_se_duplica(self):
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.MEDIO,
+            descripcion="Alerta anterior.",
+        )
+        self.registrar_nota("11.00")
+
+        from .services import generar_alertas_sat
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alertas = Alerta.objects.filter(
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            activa=True,
+        )
+        self.assertEqual(alertas.count(), 1)
+        alerta = alertas.get()
+        self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.ALTO)
+        self.assertIn("promedio general 11.00", alerta.descripcion)
+
+    def test_si_riesgo_desaparece_alerta_se_cierra(self):
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.ASISTENCIA,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Alerta anterior.",
+        )
+        self.registrar_asistencias(
+            [
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+                Asistencia.Estado.PRESENTE,
+            ]
+        )
+        self.registrar_nota("16.00")
+
+        from .services import generar_alertas_sat
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.ASISTENCIA)
+        self.assertFalse(alerta.activa)
+        self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.BAJO)
+    
+    def test_comando_generar_alertas_ejecuta_motor_sat(self):
+        self.registrar_nota("12.00")
+        salida = StringIO()
+
+        call_command("generar_alertas", fecha="2026-06-30", stdout=salida)
+
+        self.assertTrue(
+            Alerta.objects.filter(
+                alumno=self.alumno,
+                tipo=Alerta.Tipo.RENDIMIENTO,
+                activa=True,
+            ).exists()
+        )
+        self.assertIn("Motor SAT ejecutado correctamente", salida.getvalue())
+
+    def test_comando_generar_alertas_ignora_fecha_fuera_de_periodo(self):
+        self.registrar_nota("12.00")
+        salida = StringIO()
+
+        call_command("generar_alertas", fecha="2026-01-15", stdout=salida)
+
+        self.assertFalse(Alerta.objects.filter(alumno=self.alumno).exists())
+        self.assertIn("fuera del anio escolar activo", salida.getvalue())
