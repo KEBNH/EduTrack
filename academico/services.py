@@ -73,7 +73,7 @@ def clasificar_riesgo_asistencia(porcentaje_faltas):
 def clasificar_riesgo_rendimiento(promedio):
     if promedio < Decimal("13"):
         return Alerta.NivelRiesgo.ALTO
-    if promedio < Decimal("15"):
+    if promedio <= Decimal("14"):
         return Alerta.NivelRiesgo.MEDIO
     return Alerta.NivelRiesgo.BAJO
 

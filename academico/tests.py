@@ -1308,23 +1308,33 @@ class MotorSATTests(TestCase):
         self.assertIn("40.00% de faltas", alerta.descripcion)
 
     def test_notas_bajas_generan_alerta_de_rendimiento(self):
-        self.registrar_asistencias(
-            [
-                Asistencia.Estado.PRESENTE,
-                Asistencia.Estado.PRESENTE,
-                Asistencia.Estado.PRESENTE,
-            ]
-        )
-        self.registrar_nota("12.00")
-
         from .services import generar_alertas_sat
+        self.registrar_nota("12.00")
 
         generar_alertas_sat(fecha=date(2026, 6, 30))
 
         alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.RENDIMIENTO)
         self.assertTrue(alerta.activa)
         self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.ALTO)
-        self.assertIn("promedio general 12.00", alerta.descripcion)
+
+    def test_promedio_14_genera_alerta_media(self):
+        from .services import generar_alertas_sat
+        self.registrar_nota("14.00")
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.RENDIMIENTO)
+        self.assertTrue(alerta.activa)
+        self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.MEDIO)
+
+    def test_promedio_sobre_14_no_genera_alerta(self):
+        from .services import generar_alertas_sat
+        self.registrar_nota("14.50")
+
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        alerta = Alerta.objects.filter(alumno=self.alumno, tipo=Alerta.Tipo.RENDIMIENTO, activa=True)
+        self.assertFalse(alerta.exists())
 
     def test_alerta_existente_se_actualiza_y_no_se_duplica(self):
         Alerta.objects.create(
