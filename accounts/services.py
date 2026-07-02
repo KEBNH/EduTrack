@@ -19,6 +19,7 @@ ROLES_QUE_PUEDE_CREAR = {
         CustomUser.Rol.PROFESOR,
         CustomUser.Rol.PERSONAL_ACADEMICO,
     },
+    CustomUser.Rol.PROFESOR: {CustomUser.Rol.APODERADO},
 }
 
 ROLES_CON_INSTITUCION = {
