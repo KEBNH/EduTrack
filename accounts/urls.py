@@ -1,8 +1,8 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .forms import EmailAuthenticationForm
 from .views import (
+    LoginSeguroView,
     activar_cuenta,
     usuario_cambiar_estado,
     usuario_crear,
@@ -13,14 +13,7 @@ from .views import (
 app_name = "accounts"
 
 urlpatterns = [
-    path(
-        "login/",
-        auth_views.LoginView.as_view(
-            template_name="accounts/login.html",
-            authentication_form=EmailAuthenticationForm,
-        ),
-        name="login",
-    ),
+    path("login/", LoginSeguroView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("activar/<uidb64>/<token>/", activar_cuenta, name="activar_cuenta"),
     path("usuarios/", usuario_lista, name="usuario_lista"),

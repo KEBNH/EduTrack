@@ -158,6 +158,12 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'accounts:login'
+LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", 5))
+LOGIN_LOCKOUT_SECONDS = int(os.environ.get("LOGIN_LOCKOUT_SECONDS", 600))
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", 7200))
+CSRF_COOKIE_HTTPONLY = True
 
 # Durante el desarrollo los correos se imprimen en la consola de runserver.
 # Para produccion, este backend puede sustituirse por SMTP sin cambiar el flujo

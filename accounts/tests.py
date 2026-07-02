@@ -1,10 +1,84 @@
 import re
 
 from django.core import mail
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import CustomUser
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    LOGIN_MAX_ATTEMPTS=3,
+    LOGIN_LOCKOUT_SECONDS=600,
+)
+class LoginSeguroTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.usuario = CustomUser.objects.create_user(
+            email="login@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="11112222",
+            rol=CustomUser.Rol.IT,
+        )
+
+    def login(self, email="login@edutrack.test", password="ClaveSegura!2026"):
+        return self.client.post(
+            reverse("accounts:login"),
+            {"username": email, "password": password},
+        )
+
+    def test_login_correcto_normaliza_correo(self):
+        response = self.login(email=" LOGIN@EDUTRACK.TEST ")
+
+        self.assertRedirects(response, reverse("inicio"))
+
+    def test_login_incorrecto_muestra_mensaje_generico(self):
+        response = self.login(password="clave-incorrecta")
+
+        self.assertContains(response, "Correo o contrasena invalidos.")
+        self.assertNotContains(response, "no existe")
+        self.assertNotContains(response, "inactiva")
+
+    def test_bloquea_temporalmente_despues_de_intentos_fallidos(self):
+        for _ in range(3):
+            self.login(password="clave-incorrecta")
+
+        response = self.login()
+
+        self.assertContains(
+            response,
+            "Demasiados intentos fallidos. Intente nuevamente en unos minutos.",
+        )
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_usuario_inactivo_no_puede_iniciar_sesion(self):
+        self.usuario.is_active = False
+        self.usuario.save(update_fields=("is_active",))
+
+        response = self.login()
+
+        self.assertContains(response, "Correo o contrasena invalidos.")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_usuario_pendiente_no_puede_iniciar_sesion(self):
+        pendiente = CustomUser.objects.create_user(
+            email="pendiente@edutrack.test",
+            password="Temporal!2026",
+            dni="22223333",
+            rol=CustomUser.Rol.MINEDU,
+        )
+        pendiente.set_unusable_password()
+        pendiente.save(update_fields=("password",))
+
+        response = self.login(
+            email="pendiente@edutrack.test",
+            password="Temporal!2026",
+        )
+
+        self.assertContains(response, "Correo o contrasena invalidos.")
+        self.assertNotIn("_auth_user_id", self.client.session)
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
