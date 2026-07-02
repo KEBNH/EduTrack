@@ -241,3 +241,4 @@ def generar_alertas_sat(fecha=None):
         "cerradas": None,
         "fuera_de_periodo": False,
     }
+

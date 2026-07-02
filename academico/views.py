@@ -22,7 +22,6 @@ from .forms import (
 from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
 from .services import asignar_cursos_activos
 
-
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
 ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO}
 ROLES_LECTURA_ACADEMICA = {
@@ -31,7 +30,6 @@ ROLES_LECTURA_ACADEMICA = {
     CustomUser.Rol.PERSONAL_ACADEMICO,
 }
 
-
 @login_required
 def inicio(request):
     return render(
@@ -39,7 +37,6 @@ def inicio(request):
         "bashboard.html",
         {"capacidades": capacidades_para(request.user)},
     )
-
 
 class PermisoRolMixin(LoginRequiredMixin, UserPassesTestMixin):
     roles_permitidos = set()
