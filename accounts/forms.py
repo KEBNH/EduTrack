@@ -6,6 +6,10 @@ from .services import roles_permitidos_para
 
 
 class EmailAuthenticationForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": "Correo o contrasena invalidos.",
+        "inactive": "Correo o contrasena invalidos.",
+    }
     username = forms.EmailField(
         label="Correo electronico",
         widget=forms.EmailInput(attrs={"class": "form-control", "autofocus": True}),
@@ -15,6 +19,16 @@ class EmailAuthenticationForm(AuthenticationForm):
         strip=False,
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
     )
+
+    def clean_username(self):
+        return self.cleaned_data["username"].lower().strip()
+
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise forms.ValidationError(
+                self.error_messages["inactive"],
+                code="inactive",
+            )
 
 
 class UsuarioBaseForm(forms.ModelForm):

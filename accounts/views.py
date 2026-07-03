@@ -1,12 +1,22 @@
 from django.contrib import messages
+from django.conf import settings
+from django.contrib.auth.views import LoginView
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django import forms
+import hashlib
 
-from .forms import ActivarCuentaForm, CustomUserCreationForm, CustomUserUpdateForm
+from .forms import (
+    ActivarCuentaForm,
+    CustomUserCreationForm,
+    CustomUserUpdateForm,
+    EmailAuthenticationForm,
+)
 from .models import CustomUser
 from .services import (
     crear_usuario,
@@ -16,6 +26,71 @@ from .services import (
     usuarios_gestionables_por,
 )
 from .tokens import activation_token_generator
+
+
+MENSAJE_BLOQUEO_LOGIN = (
+    "Demasiados intentos fallidos. Intente nuevamente en unos minutos."
+)
+
+
+def _ip_cliente(request):
+    return request.META.get("REMOTE_ADDR", "")
+
+
+def _identificador_login(request):
+    return request.POST.get("username", "").lower().strip()
+
+
+def _clave_intentos_login(request, sufijo):
+    base = f"{_ip_cliente(request)}:{_identificador_login(request)}"
+    digest = hashlib.sha256(base.encode("utf-8")).hexdigest()
+    return f"login:{sufijo}:{digest}"
+
+
+def _login_bloqueado(request):
+    return cache.get(_clave_intentos_login(request, "bloqueo"), False)
+
+
+def _registrar_intento_fallido(request):
+    max_intentos = getattr(settings, "LOGIN_MAX_ATTEMPTS", 5)
+    tiempo_bloqueo = getattr(settings, "LOGIN_LOCKOUT_SECONDS", 600)
+    clave_intentos = _clave_intentos_login(request, "intentos")
+    intentos = cache.get(clave_intentos, 0) + 1
+    cache.set(clave_intentos, intentos, timeout=tiempo_bloqueo)
+    if intentos >= max_intentos:
+        cache.set(
+            _clave_intentos_login(request, "bloqueo"),
+            True,
+            timeout=tiempo_bloqueo,
+        )
+
+
+def _limpiar_intentos_login(request):
+    cache.delete(_clave_intentos_login(request, "intentos"))
+    cache.delete(_clave_intentos_login(request, "bloqueo"))
+
+
+class LoginSeguroView(LoginView):
+    template_name = "accounts/login.html"
+    authentication_form = EmailAuthenticationForm
+    bloqueado = False
+
+    def dispatch(self, request, *args, **kwargs):
+        self.bloqueado = request.method == "POST" and _login_bloqueado(request)
+        if self.bloqueado:
+            form = self.get_form()
+            form.add_error(None, forms.ValidationError(MENSAJE_BLOQUEO_LOGIN))
+            return self.form_invalid(form)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        if self.request.method == "POST" and not self.bloqueado:
+            _registrar_intento_fallido(self.request)
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        _limpiar_intentos_login(self.request)
+        return super().form_valid(form)
 
 
 def _validar_acceso_panel(usuario):

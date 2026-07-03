@@ -101,7 +101,14 @@
                             <span class="menu-text"> Notas </span>
                         </a>
                     </li>
-
+                    {% if request.user.rol == "DIRECTOR" or request.user.rol == "PROFESOR" or request.user.rol == "PERSONAL_ACADEMICO" %}
+                    <li class="side-nav-item">
+                        <a href="{% url 'academico:alerta_lista' %}" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-alert-triangle"></i></span>
+                            <span class="menu-text"> Alertas </span>
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="side-nav-title mt-2">
                         Reportes
                     </li>
