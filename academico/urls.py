@@ -26,4 +26,6 @@ urlpatterns = [
     path("notas/", views.NotaListView.as_view(), name="nota_lista"),
     path("notas/crear/", views.NotaCreateView.as_view(), name="nota_crear"),
     path("notas/<int:pk>/editar/", views.NotaUpdateView.as_view(), name="nota_editar"),
+    path("alertas/", views.AlertaListView.as_view(), name="alerta_lista"),
+    path("alertas/<int:pk>/cerrar/", views.alerta_cerrar, name="alerta_cerrar"),
 ]
