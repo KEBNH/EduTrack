@@ -19,6 +19,12 @@ ROLES_QUE_PUEDE_CREAR = {
         CustomUser.Rol.PROFESOR,
         CustomUser.Rol.PERSONAL_ACADEMICO,
     },
+    CustomUser.Rol.PERSONAL_ACADEMICO: {CustomUser.Rol.APODERADO},
+}
+
+ROLES_GESTION_LIMITADA_POR_INSTITUCION = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
 }
 
 ROLES_CON_INSTITUCION = {
@@ -74,7 +80,7 @@ def puede_gestionar_usuario(usuario_actual, usuario_objetivo):
         return False
     if usuario_objetivo.rol not in roles_permitidos_para(usuario_actual):
         return False
-    if usuario_actual.rol == CustomUser.Rol.DIRECTOR:
+    if usuario_actual.rol in ROLES_GESTION_LIMITADA_POR_INSTITUCION:
         return usuario_objetivo.institucion_id == usuario_actual.institucion_id
     return True
 
@@ -85,7 +91,7 @@ def usuarios_gestionables_por(usuario_actual):
         return CustomUser.objects.none()
 
     usuarios = CustomUser.objects.filter(rol__in=roles)
-    if usuario_actual.rol == CustomUser.Rol.DIRECTOR:
+    if usuario_actual.rol in ROLES_GESTION_LIMITADA_POR_INSTITUCION:
         usuarios = usuarios.filter(institucion=usuario_actual.institucion)
     return usuarios
 

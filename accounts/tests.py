@@ -1,11 +1,22 @@
 import re
 
+from django.conf import settings
 from django.core import mail
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from academico.models import Institucion
+
 from .models import CustomUser
+from .services import (
+    crear_usuario,
+    puede_crear_usuario,
+    puede_gestionar_usuario,
+    roles_permitidos_para,
+    usuarios_gestionables_por,
+)
 
 
 @override_settings(
@@ -79,6 +90,12 @@ class LoginSeguroTests(TestCase):
 
         self.assertContains(response, "Correo o contrasena invalidos.")
         self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class ConfiguracionSesionTests(TestCase):
+    def test_sesion_expira_tras_quince_minutos_de_inactividad(self):
+        self.assertEqual(settings.SESSION_COOKIE_AGE, 900)
+        self.assertTrue(settings.SESSION_SAVE_EVERY_REQUEST)
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -155,3 +172,111 @@ class FlujoActivacionTests(TestCase):
 
         self.assertContains(response, "Activación pendiente")
         self.assertNotContains(response, f"<td>{usuario.codigo_unico}</td>", html=True)
+
+
+class PermisosCreacionUsuariosTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(
+            nombre="IE Central",
+            codigo="IE-001",
+        )
+        self.otra_institucion = Institucion.objects.create(
+            nombre="IE Norte",
+            codigo="IE-002",
+        )
+        self.personal = CustomUser.objects.create_user(
+            email="personal@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="33334444",
+            rol=CustomUser.Rol.PERSONAL_ACADEMICO,
+            institucion=self.institucion,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="44445555",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.director = CustomUser.objects.create_user(
+            email="director@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="55556666",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+
+    def datos_apoderado(self, email="apoderado@edutrack.test", dni="66667777"):
+        return {
+            "dni": dni,
+            "first_name": "Ana",
+            "last_name": "Torres",
+            "celular": "987654321",
+            "email": email,
+            "rol": CustomUser.Rol.APODERADO,
+        }
+
+    def test_personal_academico_puede_crear_apoderado(self):
+        self.assertTrue(
+            puede_crear_usuario(self.personal, CustomUser.Rol.APODERADO)
+        )
+        self.assertIn(
+            CustomUser.Rol.APODERADO,
+            roles_permitidos_para(self.personal),
+        )
+
+        usuario = crear_usuario(
+            usuario_actual=self.personal,
+            datos=self.datos_apoderado(),
+        )
+
+        self.assertEqual(usuario.rol, CustomUser.Rol.APODERADO)
+        self.assertEqual(usuario.institucion, self.institucion)
+        self.assertEqual(usuario.created_by, self.personal)
+        self.assertFalse(usuario.has_usable_password())
+
+    def test_profesor_no_puede_crear_apoderado(self):
+        self.assertFalse(
+            puede_crear_usuario(self.profesor, CustomUser.Rol.APODERADO)
+        )
+        self.assertNotIn(
+            CustomUser.Rol.APODERADO,
+            roles_permitidos_para(self.profesor),
+        )
+
+        with self.assertRaises(PermissionDenied):
+            crear_usuario(
+                usuario_actual=self.profesor,
+                datos=self.datos_apoderado(),
+            )
+
+    def test_director_mantiene_creacion_de_profesores_y_personal_academico(self):
+        self.assertEqual(
+            roles_permitidos_para(self.director),
+            {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO},
+        )
+
+    def test_personal_academico_gestiona_solo_apoderados_de_su_institucion(self):
+        apoderado = CustomUser.objects.create_user(
+            email="apoderado1@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="77778888",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        apoderado_otra_institucion = CustomUser.objects.create_user(
+            email="apoderado2@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="88889999",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.otra_institucion,
+        )
+
+        gestionables = list(usuarios_gestionables_por(self.personal))
+
+        self.assertIn(apoderado, gestionables)
+        self.assertNotIn(apoderado_otra_institucion, gestionables)
+        self.assertTrue(puede_gestionar_usuario(self.personal, apoderado))
+        self.assertFalse(
+            puede_gestionar_usuario(self.personal, apoderado_otra_institucion)
+        )
