@@ -19,7 +19,7 @@ ROLES_QUE_PUEDE_CREAR = {
         CustomUser.Rol.PROFESOR,
         CustomUser.Rol.PERSONAL_ACADEMICO,
     },
-    CustomUser.Rol.PERSONAL_ACADEMICO: {CustomUser.Rol.APODERADO},
+CustomUser.Rol.PERSONAL_ACADEMICO: {CustomUser.Rol.APODERADO},
 }
 
 ROLES_GESTION_LIMITADA_POR_INSTITUCION = {
