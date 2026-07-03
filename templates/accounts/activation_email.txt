@@ -1,0 +1,8 @@
+Hola {{ usuario.get_full_name|default:usuario.email }},
+
+Se ha creado una cuenta para ti en EduTrack.
+
+Para activarla y establecer tu contrasena, abre el siguiente enlace:
+{{ activation_url }}
+
+Si no esperabas este mensaje, puedes ignorarlo.

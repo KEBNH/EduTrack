@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Activar cuenta | EduTrack</title>
+    <link href="/static/css/vendor.min.css" rel="stylesheet">
+    <link href="/static/css/app.min.css" rel="stylesheet">
+</head>
+<body class="authentication-bg">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-3">Activar cuenta</h3>
+                        {% if enlace_invalido %}
+                        <div class="alert alert-danger">
+                            El enlace de activacion no es valido, ya fue utilizado o ha expirado.
+                        </div>
+                        <a class="btn btn-primary" href="{% url 'accounts:login' %}">Ir al inicio de sesion</a>
+                        {% else %}
+                        <p class="text-muted">Establece una contrasena para completar la activacion.</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+                            {% for field in form %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% for error in field.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                            <button class="btn btn-primary w-100" type="submit">Activar cuenta</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

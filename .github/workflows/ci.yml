@@ -2,79 +2,179 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "feature/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "Ambiente a desplegar manualmente"
+        required: true
+        default: development
+        type: choice
+        options:
+          - development
+          - production
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    name: Tests + Análisis de Seguridad
+    name: Tests y analisis de seguridad
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout código
+      - name: Checkout codigo
         uses: actions/checkout@v4
 
       - name: Configurar Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
-
-      - name: Ejecutar tests
-        run: python manage.py test
-
-      - name: 🔒 Análisis de seguridad (Bandit)
         run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install bandit
-          bandit -r . -ll -ii --exclude ./tests,./venv
+
+      - name: Verificar configuracion de Django
+        run: python manage.py check
+
+      - name: Ejecutar tests con coverage minimo 80%
+        run: |
+          python -m coverage run manage.py test
+          python -m coverage report
+
+      - name: Analisis de seguridad con Bandit
+        run: bandit -r . -ll -ii --exclude ".venv,static,templates,db.sqlite3,**/migrations,**/__pycache__"
+
+  dast:
+    name: DAST - OWASP ZAP Baseline
+    needs: test
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Preparar base de datos de prueba DAST
+        run: python manage.py migrate --run-syncdb
+
+      - name: Iniciar servidor Django para DAST
+        run: |
+          python manage.py runserver 0.0.0.0:8000 &
+          sleep 10
+
+      - name: Verificar que la app responde
+        run: curl -f http://localhost:8000/accounts/login/
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "http://localhost:8000/accounts/login/"
+          rules_file_name: ".zap/rules.tsv"
+          fail_action: true
+          allow_issue_writing: false
+          artifact_name: "zap-report"
+          cmd_options: "-I"
 
   deploy-dev:
     name: Deploy a Desarrollo
-    needs: test
+    needs: dast
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'development') }}
+    environment:
+      name: development
+      url: https://edutrack-dev-server.onrender.com
+    concurrency:
+      group: render-development
+      cancel-in-progress: true
 
     steps:
-      - name: 🚀 Deploy a Dev (Render)
+      - name: Deploy a Dev en Render
         run: |
-          curl -X POST ${{ secrets.RENDER_DEV_HOOK }}
+          curl -fsS -X POST "${{ secrets.RENDER_DEV_HOOK }}"
           echo "Deploy a Dev disparado"
 
-      - name: ⏳ Esperar que Render inicie
+      - name: Esperar que Render inicie
         run: sleep 30
 
-  smoke-test:
+  smoke-test-dev:
     name: Smoke Test en Dev
     needs: deploy-dev
     runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'development') }}
 
     steps:
-      - name: 🩺 Verificar que Dev responde
+      - name: Verificar que Dev responde
         run: |
-          for i in 1 2 3 4 5; do
+          URL="https://edutrack-dev-server.onrender.com/accounts/login/"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://edutrack-dev-server.onrender.com/health)
-            if [[ $STATUS -eq 200 ]]; then
-              echo "✅ Dev responde correctamente (HTTP $STATUS)"
+              "$URL")
+            if [[ "$STATUS" -eq 200 ]]; then
+              echo "Dev responde correctamente en $URL (HTTP $STATUS)"
               exit 0
             fi
             echo "Intento $i fallido (HTTP $STATUS), reintentando..."
-            sleep 10
+            sleep 15
           done
-          echo "❌ Dev no responde después de 5 intentos"
+          echo "Dev no responde despues de 10 intentos"
+          exit 1
+
+  verify-dev-before-prod:
+    name: Verificar Dev antes de Produccion
+    needs: dast
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
+
+    steps:
+      - name: Verificar que Dev responde
+        run: |
+          URL="https://edutrack-dev-server.onrender.com/accounts/login/"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              "$URL")
+            if [[ "$STATUS" -eq 200 ]]; then
+              echo "Dev responde correctamente en $URL (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Intento $i fallido (HTTP $STATUS), reintentando..."
+            sleep 15
+          done
+          echo "Dev no responde despues de 10 intentos"
           exit 1
 
   deploy-prod:
-    name: Deploy a Producción
-    needs: smoke-test
+    name: Deploy a Produccion
+    needs: verify-dev-before-prod
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
+    environment:
+      name: production
+      url: https://edutrack-prod-server.onrender.com
+    concurrency:
+      group: render-production
+      cancel-in-progress: false
 
     steps:
-      - name: 🚀 Deploy a Prod (Render)
+      - name: Deploy a Prod en Render
         run: |
-          curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
-          echo "✅ Deploy a Producción disparado"
+          curl -fsS -X POST "${{ secrets.RENDER_PROD_HOOK }}"
+          echo "Deploy a Produccion disparado"
