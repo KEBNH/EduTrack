@@ -44,4 +44,81 @@
         </div>
     </div>
 </div>
+
+{% if alertas_popup %}
+<div class="modal fade" id="alertasPopupModal" tabindex="-1" aria-labelledby="alertasPopupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="alertasPopupModalLabel">Alertas activas</h5>
+                    <p class="text-muted mb-0">Hay alertas SAT pendientes de revision.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="fw-semibold fs-18">{{ alertas_popup.total }}</div>
+                            <div class="text-muted small">Activas</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="fw-semibold fs-18 text-danger">{{ alertas_popup.altas }}</div>
+                            <div class="text-muted small">Altas</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="fw-semibold fs-18 text-warning">{{ alertas_popup.medias }}</div>
+                            <div class="text-muted small">Medias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    {% for alerta in alertas_popup.recientes %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between gap-2">
+                            <div>
+                                <div class="fw-semibold">{{ alerta.alumno.apellidos }}, {{ alerta.alumno.nombres }}</div>
+                                <div class="text-muted small">{{ alerta.get_tipo_display }}</div>
+                            </div>
+                            {% if alerta.nivel_riesgo == "ALTO" %}
+                            <span class="badge bg-danger-subtle text-danger align-self-start">Alto</span>
+                            {% elif alerta.nivel_riesgo == "MEDIO" %}
+                            <span class="badge bg-warning-subtle text-warning align-self-start">Medio</span>
+                            {% else %}
+                            <span class="badge bg-success-subtle text-success align-self-start">Bajo</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-0 mt-1">{{ alerta.descripcion }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                <a class="btn btn-primary" href="{% url 'academico:alerta_lista' %}?estado=ACTIVA">Ver alertas</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock contenido %}
+
+{% block scripts %}
+{{ block.super }}
+{% if alertas_popup %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modalElement = document.getElementById("alertasPopupModal");
+    if (modalElement && window.bootstrap) {
+        new bootstrap.Modal(modalElement).show();
+    }
+});
+</script>
+{% endif %}
+{% endblock scripts %}

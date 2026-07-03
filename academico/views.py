@@ -20,7 +20,7 @@ from .forms import (
     NotaForm,
 )
 from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
-from .services import asignar_cursos_activos
+from .services import asignar_cursos_activos, asignar_matriculas_activas
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
 ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -29,13 +29,60 @@ ROLES_LECTURA_ACADEMICA = {
     CustomUser.Rol.PROFESOR,
     CustomUser.Rol.PERSONAL_ACADEMICO,
 }
+ROLES_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PROFESOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+}
+ROLES_CIERRE_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+}
+ALERTAS_POPUP_SESSION_KEY = "alertas_popup_mostrado"
+
+
+def alertas_visibles_para(usuario):
+    if (
+        not usuario.is_active
+        or usuario.rol not in ROLES_ALERTAS
+        or usuario.institucion_id is None
+    ):
+        return Alerta.objects.none()
+
+    queryset = Alerta.objects.filter(institucion=usuario.institucion)
+    if usuario.rol == CustomUser.Rol.PROFESOR:
+        queryset = queryset.filter(
+            alumno__matriculas__cursos_matriculados__curso__profesor=usuario
+        ).distinct()
+    return queryset
 
 @login_required
 def inicio(request):
+    context = {"capacidades": capacidades_para(request.user)}
+    if not request.session.get(ALERTAS_POPUP_SESSION_KEY):
+        alertas_activas = (
+            alertas_visibles_para(request.user)
+            .filter(activa=True)
+            .select_related("alumno")
+        )
+        total_alertas = alertas_activas.count()
+        if total_alertas:
+            context["alertas_popup"] = {
+                "total": total_alertas,
+                "altas": alertas_activas.filter(
+                    nivel_riesgo=Alerta.NivelRiesgo.ALTO
+                ).count(),
+                "medias": alertas_activas.filter(
+                    nivel_riesgo=Alerta.NivelRiesgo.MEDIO
+                ).count(),
+                "recientes": list(alertas_activas[:5]),
+            }
+            request.session[ALERTAS_POPUP_SESSION_KEY] = True
+
     return render(
         request,
         "bashboard.html",
-        {"capacidades": capacidades_para(request.user)},
+        context,
     )
 
 class PermisoRolMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -284,6 +331,12 @@ class CursoCreateView(FormularioInstitucionalMixin, CreateView):
     url_lista = "academico:curso_lista"
     mensaje_exito = "Curso registrado correctamente."
 
+    def form_valid(self, form):
+        with transaction.atomic():
+            response = super().form_valid(form)
+            asignar_matriculas_activas(self.object)
+        return response
+
 
 class CursoUpdateView(FormularioInstitucionalMixin, UpdateView):
     model = Curso
@@ -393,18 +446,6 @@ class NotaUpdateView(FormularioInstitucionalMixin, UpdateView):
             queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset
 
-ROLES_ALERTAS = {
-    CustomUser.Rol.DIRECTOR,
-    CustomUser.Rol.PROFESOR,
-    CustomUser.Rol.PERSONAL_ACADEMICO,
-}
-
-ROLES_CIERRE_ALERTAS = {
-    CustomUser.Rol.DIRECTOR,
-    CustomUser.Rol.PERSONAL_ACADEMICO,
-}
-
-
 class AlertaListView(ListaInstitucionalMixin, ListView):
     model = Alerta
     roles_permitidos = ROLES_ALERTAS
@@ -425,10 +466,7 @@ class AlertaListView(ListaInstitucionalMixin, ListView):
         estado = self.request.GET.get("estado", "").strip()
         alumno = self.request.GET.get("alumno", "").strip()
 
-        if self.request.user.rol == CustomUser.Rol.PROFESOR:
-            queryset = queryset.filter(
-                alumno__matriculas__cursos_matriculados__curso__profesor=self.request.user
-            ).distinct()
+        queryset = queryset.filter(pk__in=alertas_visibles_para(self.request.user))
 
         if tipo in Alerta.Tipo.values:
             queryset = queryset.filter(tipo=tipo)

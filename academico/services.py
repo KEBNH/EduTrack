@@ -53,6 +53,34 @@ def asignar_cursos_activos(matricula):
     )
 
 
+@transaction.atomic
+def asignar_matriculas_activas(curso):
+    if not curso.activo:
+        return
+
+    matriculas = Matricula.objects.filter(
+        institucion=curso.institucion,
+        grado=curso.grado,
+        estado=Matricula.Estado.ACTIVA,
+    )
+    existentes = set(
+        MatriculaCurso.objects.filter(curso=curso).values_list(
+            "matricula_id", flat=True
+        )
+    )
+    MatriculaCurso.objects.bulk_create(
+        [
+            MatriculaCurso(
+                institucion=curso.institucion,
+                matricula=matricula,
+                curso=curso,
+            )
+            for matricula in matriculas
+            if matricula.pk not in existentes
+        ]
+    )
+
+
 def obtener_bimestre(fecha=None):
     fecha = fecha or date.today()
     for numero, inicio, fin in BIMESTRES:

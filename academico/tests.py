@@ -357,6 +357,40 @@ class FlujoMatriculaCursoTests(TestCase):
             [self.curso_activo.pk],
         )
 
+    def test_crear_curso_asigna_matriculas_activas_del_grado(self):
+        matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:curso_crear"),
+            {
+                "nombre": "Ciencia y tecnologia",
+                "codigo": "CTA-01",
+                "grado": self.grado.pk,
+                "profesor": self.profesor.pk,
+                "activo": "on",
+            },
+        )
+
+        self.assertRedirects(response, reverse("academico:curso_lista"))
+        curso = Curso.objects.get(codigo="CTA-01")
+        matricula_curso = MatriculaCurso.objects.get(
+            matricula=matricula,
+            curso=curso,
+        )
+        asistencia_form = AsistenciaForm(usuario_actual=self.profesor)
+        nota_form = NotaForm(usuario_actual=self.profesor)
+
+        self.assertIn(
+            matricula_curso,
+            asistencia_form.fields["matricula_curso"].queryset,
+        )
+        self.assertIn(matricula_curso, nota_form.fields["matricula_curso"].queryset)
+
     def test_sincronizar_matricula_no_duplica_cursos_existentes(self):
         self.client.force_login(self.personal)
         self.client.post(
@@ -1523,6 +1557,44 @@ class VisualizacionAlertasTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Promedio bajo detectado.")
+
+    def test_dashboard_muestra_popup_de_alertas_activas(self):
+        self.client.force_login(self.director)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Hay alertas SAT pendientes de revision.")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta externa.")
+
+    def test_dashboard_no_repite_popup_en_la_misma_sesion(self):
+        self.client.force_login(self.director)
+
+        primera_respuesta = self.client.get(reverse("inicio"))
+        segunda_respuesta = self.client.get(reverse("inicio"))
+
+        self.assertContains(primera_respuesta, "alertasPopupModal")
+        self.assertNotContains(segunda_respuesta, "alertasPopupModal")
+
+    def test_dashboard_profesor_solo_ve_popup_de_sus_alertas(self):
+        self.client.force_login(self.profesor)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta externa.")
+
+    def test_dashboard_apoderado_no_ve_popup_de_alertas(self):
+        self.client.force_login(self.apoderado)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "alertasPopupModal")
 
     def test_apoderado_no_puede_ver_alertas(self):
         self.client.force_login(self.apoderado)
