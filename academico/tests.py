@@ -1816,3 +1816,62 @@ class VisualizacionAlertasTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.alerta.refresh_from_db()
         self.assertTrue(self.alerta.activa)
+
+class ReporteDirectorTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Test", codigo="IE-T01")
+        self.director = CustomUser.objects.create_user(
+            email="director@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="99998888",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="11223344",
+            nombres="Test",
+            apellidos="Alumno",
+            fecha_nacimiento="2010-01-01",
+        )
+        Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Riesgo alto de prueba",
+        )
+        self.client.force_login(self.director)
+
+    def test_director_ve_reporte_de_su_institucion(self):
+        response = self.client.get(reverse("academico:reporte_director"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_alto"], 1)
+        self.assertEqual(response.context["total_seguimiento"], 1)
+
+    def test_otro_rol_no_puede_ver_reporte(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="77776666",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(reverse("academico:reporte_director"))
+
+        self.assertEqual(response.status_code, 403)

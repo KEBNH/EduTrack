@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Reporte institucional — Distribución de riesgo</h4>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-5 g-3 mb-3">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total alumnos</p>
+                <h3 class="mb-0">{{ total_alumnos }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Bajo riesgo</p>
+                <h3 class="mb-0 text-success">{{ total_bajo }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo medio</p>
+                <h3 class="mb-0 text-warning">{{ total_medio }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo alto</p>
+                <h3 class="mb-0 text-danger">{{ total_alto }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">En seguimiento</p>
+                <h3 class="mb-0 text-primary">{{ total_seguimiento }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h4 class="card-title mb-0">Distribución por grado</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover text-nowrap mb-0">
+            <thead class="bg-light-subtle">
+                <tr>
+                    <th>Grado</th>
+                    <th>Bajo</th>
+                    <th>Medio</th>
+                    <th>Alto</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in filas %}
+                <tr>
+                    <td>{{ fila.grado }}</td>
+                    <td><span class="badge bg-success-subtle text-success">{{ fila.bajo }}</span></td>
+                    <td><span class="badge bg-warning-subtle text-warning">{{ fila.medio }}</span></td>
+                    <td><span class="badge bg-danger-subtle text-danger">{{ fila.alto }}</span></td>
+                    <td>{{ fila.total }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No hay grados activos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -578,3 +578,78 @@ def alerta_cerrar(request, pk):
     alerta.save(update_fields=("activa", "fmodificacion"))
     messages.success(request, "Alerta cerrada correctamente.")
     return redirect("academico:alerta_lista")
+
+NIVEL_RIESGO_ORDEN = {
+    Alerta.NivelRiesgo.ALTO: 3,
+    Alerta.NivelRiesgo.MEDIO: 2,
+    Alerta.NivelRiesgo.BAJO: 1,
+}
+
+
+@login_required
+def reporte_director(request):
+    if (
+        not request.user.is_active
+        or request.user.rol != CustomUser.Rol.DIRECTOR
+        or request.user.institucion_id is None
+    ):
+        raise PermissionDenied("No tiene permiso para ver este reporte.")
+
+    institucion = request.user.institucion
+    grados = Grado.objects.filter(institucion=institucion, activo=True).order_by(
+        "nivel", "nombre", "seccion"
+    )
+
+    alertas_activas = Alerta.objects.filter(institucion=institucion, activa=True)
+    nivel_por_alumno = {}
+    for alerta in alertas_activas.only("alumno_id", "nivel_riesgo"):
+        actual = nivel_por_alumno.get(alerta.alumno_id)
+        if actual is None or NIVEL_RIESGO_ORDEN[alerta.nivel_riesgo] > NIVEL_RIESGO_ORDEN[actual]:
+            nivel_por_alumno[alerta.alumno_id] = alerta.nivel_riesgo
+
+    filas = []
+    total_bajo = total_medio = total_alto = total_seguimiento = 0
+
+    for grado in grados:
+        alumnos_ids = Matricula.objects.filter(
+            institucion=institucion, grado=grado, estado=Matricula.Estado.ACTIVA
+        ).values_list("alumno_id", flat=True)
+
+        bajo = medio = alto = 0
+        for alumno_id in alumnos_ids:
+            nivel = nivel_por_alumno.get(alumno_id)
+            if nivel == Alerta.NivelRiesgo.ALTO:
+                alto += 1
+            elif nivel == Alerta.NivelRiesgo.MEDIO:
+                medio += 1
+            else:
+                bajo += 1
+
+        filas.append(
+            {
+                "grado": grado,
+                "bajo": bajo,
+                "medio": medio,
+                "alto": alto,
+                "total": bajo + medio + alto,
+            }
+        )
+        total_bajo += bajo
+        total_medio += medio
+        total_alto += alto
+
+    total_seguimiento = len(nivel_por_alumno)
+    total_alumnos = total_bajo + total_medio + total_alto
+
+    return render(
+        request,
+        "academico/reporte_director.html",
+        {
+            "filas": filas,
+            "total_bajo": total_bajo,
+            "total_medio": total_medio,
+            "total_alto": total_alto,
+            "total_alumnos": total_alumnos,
+            "total_seguimiento": total_seguimiento,
+        },
+    )

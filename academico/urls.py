@@ -29,4 +29,5 @@ urlpatterns = [
     path("notas/<int:pk>/editar/", views.NotaUpdateView.as_view(), name="nota_editar"),
     path("alertas/", views.AlertaListView.as_view(), name="alerta_lista"),
     path("alertas/<int:pk>/cerrar/", views.alerta_cerrar, name="alerta_cerrar"),
+    path("reportes/director/", views.reporte_director, name="reporte_director"),
 ]
