@@ -1943,3 +1943,62 @@ class PortalApoderadoTests(TestCase):
         response = self.client.get(reverse("academico:portal_apoderado"))
 
         self.assertEqual(response.status_code, 403)
+
+class AsistenciaFechaValidacionTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Fechas", codigo="IE-F01")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Matematica",
+            codigo="MAT1",
+            grado=self.grado,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="10203040",
+            nombres="Test",
+            apellidos="Fecha",
+            fecha_nacimiento="2011-01-01",
+        )
+        self.matricula = Matricula.objects.create(
+            institucion=self.institucion, alumno=self.alumno, grado=self.grado
+        )
+        self.matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion, matricula=self.matricula, curso=self.curso
+        )
+
+    def test_rechaza_asistencia_en_fin_de_semana(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 3, 7),  # sabado
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        with self.assertRaises(ValidationError):
+            asistencia.full_clean()
+
+    def test_rechaza_asistencia_fuera_de_bimestre(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 12, 31),
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        with self.assertRaises(ValidationError):
+            asistencia.full_clean()
+
+    def test_acepta_fecha_valida_dentro_de_bimestre(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 3, 10),  # martes, dentro del bimestre 1
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        asistencia.full_clean()

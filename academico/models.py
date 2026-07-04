@@ -315,6 +315,13 @@ class Asistencia(ModeloInstitucional):
             errors["matricula_curso"] = (
                 "No se puede registrar asistencia en una matricula inactiva."
             )
+        if self.fecha:
+            from .services import obtener_bimestre
+
+            if self.fecha.weekday() >= 5:
+                errors["fecha"] = "No se puede registrar asistencia en fin de semana."
+            elif obtener_bimestre(self.fecha) is None:
+                errors["fecha"] = "La fecha no pertenece a ningun bimestre academico."
         if errors:
             raise ValidationError(errors)
 
