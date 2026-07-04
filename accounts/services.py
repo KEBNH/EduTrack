@@ -52,11 +52,12 @@ CAPACIDADES_POR_ROL = {
         "Registrar y actualizar asistencias y notas de sus cursos.",
     ],
     CustomUser.Rol.PERSONAL_ACADEMICO: [
-        "Gestionar alumnos, apoderados, grados, cursos y matriculas.",
+        "Registrar inscripciones con apoderado, alumno y matricula.",
+        "Gestionar grados, cursos y matriculas.",
         "Registrar y actualizar asistencias y notas.",
     ],
     CustomUser.Rol.APODERADO: [
-        "Actualmente no tiene modulos de consulta habilitados.",
+        "Consultar alertas activas asociadas a sus hijos.",
     ],
 }
 

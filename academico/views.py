@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
@@ -16,11 +16,16 @@ from .forms import (
     AsistenciaForm,
     CursoForm,
     GradoForm,
+    InscripcionForm,
     MatriculaForm,
     NotaForm,
 )
 from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
-from .services import asignar_cursos_activos
+from .services import (
+    asignar_cursos_activos,
+    asignar_matriculas_activas,
+    registrar_inscripcion,
+)
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
 ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -29,13 +34,72 @@ ROLES_LECTURA_ACADEMICA = {
     CustomUser.Rol.PROFESOR,
     CustomUser.Rol.PERSONAL_ACADEMICO,
 }
+ROLES_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PROFESOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+    CustomUser.Rol.APODERADO,
+}
+ROLES_CIERRE_ALERTAS = {
+    CustomUser.Rol.DIRECTOR,
+    CustomUser.Rol.PERSONAL_ACADEMICO,
+}
+ALERTAS_POPUP_SESSION_KEY = "alertas_popup_mostrado"
+
+
+def alertas_visibles_para(usuario):
+    if (
+        not usuario.is_active
+        or usuario.rol not in ROLES_ALERTAS
+        or usuario.institucion_id is None
+    ):
+        return Alerta.objects.none()
+
+    queryset = Alerta.objects.filter(institucion=usuario.institucion)
+    if usuario.rol == CustomUser.Rol.PROFESOR:
+        queryset = queryset.filter(
+            alumno__matriculas__cursos_matriculados__curso__profesor=usuario
+        ).distinct()
+    elif usuario.rol == CustomUser.Rol.APODERADO:
+        queryset = queryset.filter(alumno__apoderados__usuario=usuario).distinct()
+    return queryset
 
 @login_required
 def inicio(request):
+    context = {"capacidades": capacidades_para(request.user)}
+    if not request.session.get(ALERTAS_POPUP_SESSION_KEY):
+        alertas_activas = (
+            alertas_visibles_para(request.user)
+            .filter(activa=True)
+            .select_related("alumno")
+        )
+        total_alertas = alertas_activas.count()
+        if total_alertas:
+            context["alertas_popup"] = {
+                "total": total_alertas,
+                "altas": alertas_activas.filter(
+                    nivel_riesgo=Alerta.NivelRiesgo.ALTO
+                ).count(),
+                "medias": alertas_activas.filter(
+                    nivel_riesgo=Alerta.NivelRiesgo.MEDIO
+                ).count(),
+                "recientes": list(alertas_activas[:5]),
+            }
+            request.session[ALERTAS_POPUP_SESSION_KEY] = True
+
+    if request.user.rol == CustomUser.Rol.APODERADO:
+        try:
+            perfil_apoderado = request.user.perfil_apoderado
+        except Apoderado.DoesNotExist:
+            perfil_apoderado = None
+        context["hijos_apoderado"] = (
+            perfil_apoderado.alumnos.all() if perfil_apoderado else Alumno.objects.none()
+        )
+
     return render(
         request,
         "bashboard.html",
-        {"capacidades": capacidades_para(request.user)},
+        context,
     )
 
 class PermisoRolMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -170,6 +234,41 @@ class ApoderadoUpdateView(FormularioInstitucionalMixin, UpdateView):
     url_lista = "academico:apoderado_lista"
 
 
+@login_required
+def inscripcion_crear(request):
+    if (
+        not request.user.is_active
+        or request.user.rol != CustomUser.Rol.PERSONAL_ACADEMICO
+        or request.user.institucion_id is None
+    ):
+        raise PermissionDenied("No tiene permiso para registrar inscripciones.")
+
+    if request.method == "POST":
+        form = InscripcionForm(request.POST, usuario_actual=request.user)
+        if form.is_valid():
+            try:
+                registrar_inscripcion(
+                    usuario_actual=request.user,
+                    datos=form.cleaned_data,
+                )
+            except ValidationError as exc:
+                form.add_error(None, exc)
+            else:
+                messages.success(
+                    request,
+                    "Inscripcion registrada y apoderado vinculado correctamente.",
+                )
+                return redirect("academico:matricula_lista")
+    else:
+        form = InscripcionForm(usuario_actual=request.user)
+
+    return render(
+        request,
+        "academico/inscripcion_form.html",
+        {"form": form, "titulo": "Registrar inscripcion"},
+    )
+
+
 class GradoListView(ListaInstitucionalMixin, ListView):
     model = Grado
     titulo = "Grados"
@@ -284,6 +383,12 @@ class CursoCreateView(FormularioInstitucionalMixin, CreateView):
     url_lista = "academico:curso_lista"
     mensaje_exito = "Curso registrado correctamente."
 
+    def form_valid(self, form):
+        with transaction.atomic():
+            response = super().form_valid(form)
+            asignar_matriculas_activas(self.object)
+        return response
+
 
 class CursoUpdateView(FormularioInstitucionalMixin, UpdateView):
     model = Curso
@@ -393,18 +498,6 @@ class NotaUpdateView(FormularioInstitucionalMixin, UpdateView):
             queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset
 
-ROLES_ALERTAS = {
-    CustomUser.Rol.DIRECTOR,
-    CustomUser.Rol.PROFESOR,
-    CustomUser.Rol.PERSONAL_ACADEMICO,
-}
-
-ROLES_CIERRE_ALERTAS = {
-    CustomUser.Rol.DIRECTOR,
-    CustomUser.Rol.PERSONAL_ACADEMICO,
-}
-
-
 class AlertaListView(ListaInstitucionalMixin, ListView):
     model = Alerta
     roles_permitidos = ROLES_ALERTAS
@@ -425,10 +518,7 @@ class AlertaListView(ListaInstitucionalMixin, ListView):
         estado = self.request.GET.get("estado", "").strip()
         alumno = self.request.GET.get("alumno", "").strip()
 
-        if self.request.user.rol == CustomUser.Rol.PROFESOR:
-            queryset = queryset.filter(
-                alumno__matriculas__cursos_matriculados__curso__profesor=self.request.user
-            ).distinct()
+        queryset = queryset.filter(pk__in=alertas_visibles_para(self.request.user))
 
         if tipo in Alerta.Tipo.values:
             queryset = queryset.filter(tipo=tipo)

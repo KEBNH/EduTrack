@@ -101,6 +101,79 @@ class ApoderadoForm(FormularioInstitucional):
         return alumnos
 
 
+class InscripcionForm(forms.Form):
+    apoderado_usuario = forms.ModelChoiceField(
+        label="Apoderado",
+        queryset=CustomUser.objects.none(),
+        help_text=(
+            "Seleccione un usuario con rol Padre/Apoderado. "
+            "Si no aparece, debe crearlo primero en Usuarios."
+        ),
+    )
+
+    alumno_dni = forms.CharField(
+        label="DNI del alumno",
+        max_length=8,
+        widget=forms.TextInput(
+            attrs={"inputmode": "numeric", "maxlength": "8", "autocomplete": "off"}
+        ),
+    )
+    alumno_nombres = forms.CharField(label="Nombres del alumno", max_length=150)
+    alumno_apellidos = forms.CharField(label="Apellidos del alumno", max_length=150)
+    alumno_fecha_nacimiento = forms.DateField(
+        label="Fecha de nacimiento del alumno",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    grado = forms.ModelChoiceField(label="Grado", queryset=Grado.objects.none())
+
+    def __init__(self, *args, usuario_actual=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usuario_actual = usuario_actual
+        institucion = getattr(usuario_actual, "institucion", None)
+        self.fields["apoderado_usuario"].queryset = CustomUser.objects.filter(
+            institucion=institucion,
+            rol=CustomUser.Rol.APODERADO,
+            is_active=True,
+        ).order_by("last_name", "first_name", "email")
+        self.fields["grado"].queryset = Grado.objects.filter(
+            institucion=institucion, activo=True
+        )
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
+
+    def _validar_dni(self, campo):
+        dni = self.cleaned_data[campo].strip()
+        if not dni.isdigit() or len(dni) != 8:
+            raise forms.ValidationError("El DNI debe contener exactamente 8 digitos.")
+        return dni
+
+    def _validar_celular(self, campo):
+        celular = self.cleaned_data[campo].strip()
+        if not celular.isdigit() or len(celular) != 9:
+            raise forms.ValidationError(
+                "El celular debe contener exactamente 9 digitos."
+            )
+        return celular
+
+    def clean_apoderado_dni(self):
+        return self._validar_dni("apoderado_dni")
+
+    def clean_alumno_dni(self):
+        return self._validar_dni("alumno_dni")
+
+    def clean_alumno_nombres(self):
+        return " ".join(self.cleaned_data["alumno_nombres"].split())
+
+    def clean_alumno_apellidos(self):
+        return " ".join(self.cleaned_data["alumno_apellidos"].split())
+
+    def clean_alumno_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data["alumno_fecha_nacimiento"]
+        if fecha_nacimiento > date.today():
+            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
+        return fecha_nacimiento
+
+
 class GradoForm(FormularioInstitucional):
     class Meta:
         model = Grado
