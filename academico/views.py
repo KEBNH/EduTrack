@@ -25,6 +25,8 @@ from .services import (
     asignar_cursos_activos,
     asignar_matriculas_activas,
     registrar_inscripcion,
+    calcular_riesgo_asistencia, 
+    calcular_riesgo_rendimiento
 )
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -709,4 +711,40 @@ def reporte_minedu(request):
             "total_alto": total_alto,
             "total_alumnos": total_bajo + total_medio + total_alto,
         },
+    )
+
+@login_required
+def portal_apoderado(request):
+    if not request.user.is_active or request.user.rol != CustomUser.Rol.APODERADO:
+        raise PermissionDenied("No tiene permiso para ver este portal.")
+
+    try:
+        perfil_apoderado = request.user.perfil_apoderado
+    except Apoderado.DoesNotExist:
+        perfil_apoderado = None
+
+    hijos_data = []
+    hijos = perfil_apoderado.alumnos.all() if perfil_apoderado else Alumno.objects.none()
+
+    for hijo in hijos:
+        riesgo_asistencia = calcular_riesgo_asistencia(hijo)
+        riesgo_rendimiento = calcular_riesgo_rendimiento(hijo)
+        alerta_activa = (
+            Alerta.objects.filter(alumno=hijo, activa=True)
+            .order_by("-nivel_riesgo", "-fcreacion")
+            .first()
+        )
+        hijos_data.append(
+            {
+                "alumno": hijo,
+                "riesgo_asistencia": riesgo_asistencia,
+                "riesgo_rendimiento": riesgo_rendimiento,
+                "alerta_activa": alerta_activa,
+            }
+        )
+
+    return render(
+        request,
+        "academico/portal_apoderado.html",
+        {"hijos_data": hijos_data},
     )

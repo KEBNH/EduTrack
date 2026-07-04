@@ -31,4 +31,5 @@ urlpatterns = [
     path("alertas/<int:pk>/cerrar/", views.alerta_cerrar, name="alerta_cerrar"),
     path("reportes/director/", views.reporte_director, name="reporte_director"),
     path("reportes/minedu/", views.reporte_minedu, name="reporte_minedu"),
+    path("portal/", views.portal_apoderado, name="portal_apoderado"),
 ]

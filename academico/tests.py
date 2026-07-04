@@ -1875,3 +1875,71 @@ class ReporteDirectorTests(TestCase):
         response = self.client.get(reverse("academico:reporte_director"))
 
         self.assertEqual(response.status_code, 403)
+
+class PortalApoderadoTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Test", codigo="IE-T02")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.hijo = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="55667788",
+            nombres="Junior",
+            apellidos="Gomez",
+            fecha_nacimiento="2012-01-01",
+        )
+        self.otro_alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="99001122",
+            nombres="Otro",
+            apellidos="Alumno",
+            fecha_nacimiento="2012-01-01",
+        )
+        Matricula.objects.create(institucion=self.institucion, alumno=self.hijo, grado=self.grado)
+
+        self.apoderado_user = CustomUser.objects.create_user(
+            email="apoderado@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="12121212",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        self.perfil_apoderado = Apoderado.objects.create(
+            institucion=self.institucion,
+            usuario=self.apoderado_user,
+            dni="12121212",
+            nombres="Horacio",
+            apellidos="Gomez",
+            celular="987654321",
+            parentesco=Apoderado.Parentesco.PADRE,
+        )
+        self.perfil_apoderado.alumnos.add(self.hijo)
+
+    def test_apoderado_ve_solo_sus_hijos(self):
+        self.client.force_login(self.apoderado_user)
+
+        response = self.client.get(reverse("academico:portal_apoderado"))
+
+        self.assertEqual(response.status_code, 200)
+        nombres_mostrados = [item["alumno"].pk for item in response.context["hijos_data"]]
+        self.assertIn(self.hijo.pk, nombres_mostrados)
+        self.assertNotIn(self.otro_alumno.pk, nombres_mostrados)
+
+    def test_otro_rol_no_puede_ver_portal(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor2@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="66665555",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(reverse("academico:portal_apoderado"))
+
+        self.assertEqual(response.status_code, 403)

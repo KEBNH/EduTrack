@@ -115,6 +115,14 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if request.user.rol == "APODERADO" %}
+                    <li class="side-nav-item">
+                        <a href="{% url 'academico:portal_apoderado' %}" class="side-nav-link">
+                            <span class="menu-icon"><i class="ti ti-user-heart"></i></span>
+                            <span class="menu-text"> Mi Portal </span>
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if request.user.rol == "DIRECTOR" or request.user.rol == "PROFESOR" or request.user.rol == "PERSONAL_ACADEMICO" or request.user.rol == "APODERADO" %}
                     <li class="side-nav-item">
                         <a href="{% url 'academico:alerta_lista' %}" class="side-nav-link">
