@@ -1926,9 +1926,9 @@ class PortalApoderadoTests(TestCase):
         response = self.client.get(reverse("academico:portal_apoderado"))
 
         self.assertEqual(response.status_code, 200)
-        nombres_mostrados = [item["alumno"].pk for item in response.context["hijos_data"]]
-        self.assertIn(self.hijo.pk, nombres_mostrados)
-        self.assertNotIn(self.otro_alumno.pk, nombres_mostrados)
+        hijos_pks = [hijo.pk for hijo in response.context["hijos"]]
+        self.assertIn(self.hijo.pk, hijos_pks)
+        self.assertNotIn(self.otro_alumno.pk, hijos_pks)
 
     def test_otro_rol_no_puede_ver_portal(self):
         profesor = CustomUser.objects.create_user(
@@ -1941,6 +1941,61 @@ class PortalApoderadoTests(TestCase):
         self.client.force_login(profesor)
 
         response = self.client.get(reverse("academico:portal_apoderado"))
+
+        self.assertEqual(response.status_code, 403)
+    
+    def test_resumen_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_notas_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_notas", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_notas", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_asistencia_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_asistencia", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_asistencia", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_otro_rol_no_puede_ver_resumen(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="55554444",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.hijo.pk])
+        )
 
         self.assertEqual(response.status_code, 403)
 

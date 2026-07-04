@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+import calendar as calendar_module
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -260,7 +261,6 @@ def registrar_inscripcion(*, usuario_actual, datos):
         matricula_creada=matricula_creada,
     )
 
-
 def obtener_bimestre(fecha=None):
     fecha = fecha or date.today()
     for numero, inicio, fin in BIMESTRES:
@@ -269,6 +269,21 @@ def obtener_bimestre(fecha=None):
         if fecha_inicio <= fecha <= fecha_fin:
             return numero, fecha_inicio, fecha_fin
     return None
+
+def obtener_rango_bimestre(anio, numero):
+    for num, inicio, fin in BIMESTRES:
+        if num == numero:
+            return date(anio, *inicio), date(anio, *fin)
+    return None
+
+
+def anios_disponibles_alumno(alumno):
+    return list(
+        Matricula.objects.filter(alumno=alumno)
+        .order_by("-anio_academico")
+        .values_list("anio_academico", flat=True)
+        .distinct()
+    )
 
 def clasificar_riesgo_asistencia(porcentaje_faltas):
     if porcentaje_faltas > Decimal("20"):
@@ -450,3 +465,92 @@ def generar_alertas_sat(fecha=None):
         "fuera_de_periodo": False,
     }
 
+def notas_por_bimestre(alumno, anio, numero_bimestre):
+    matricula = Matricula.objects.filter(
+        alumno=alumno, anio_academico=anio
+    ).first()
+    if not matricula:
+        return []
+
+    notas = (
+        Nota.objects.filter(
+            matricula_curso__matricula=matricula,
+            periodo=str(numero_bimestre),
+        )
+        .select_related("matricula_curso__curso")
+        .order_by("matricula_curso__curso__nombre", "evaluacion")
+    )
+
+    cursos = {}
+    for nota in notas:
+        curso = nota.matricula_curso.curso
+        cursos.setdefault(curso, []).append(nota)
+
+    resultado = []
+    for curso, notas_curso in cursos.items():
+        promedio = sum(n.calificacion for n in notas_curso) / len(notas_curso)
+        resultado.append({"curso": curso, "notas": notas_curso, "promedio": promedio})
+
+    return resultado
+
+def calendario_asistencia_bimestre(alumno, anio, numero_bimestre):
+    rango = obtener_rango_bimestre(anio, numero_bimestre)
+    if not rango:
+        return []
+
+    fecha_inicio, fecha_fin = rango
+    matricula = Matricula.objects.filter(alumno=alumno, anio_academico=anio).first()
+    if not matricula:
+        return []
+
+    asistencias = Asistencia.objects.filter(
+        matricula_curso__matricula=matricula,
+        fecha__range=(fecha_inicio, fecha_fin),
+    ).select_related("matricula_curso__curso")
+
+    estado_por_dia = {}
+    for asistencia in asistencias:
+        dia = asistencia.fecha
+        if asistencia.estado == Asistencia.Estado.FALTA:
+            estado_por_dia[dia] = "FALTA"
+        elif dia not in estado_por_dia:
+            estado_por_dia[dia] = "PRESENTE"
+
+    meses = []
+    mes_actual = fecha_inicio.replace(day=1)
+    while mes_actual <= fecha_fin:
+        _, dias_en_mes = calendar_module.monthrange(mes_actual.year, mes_actual.month)
+        semanas = []
+        cal = calendar_module.Calendar(firstweekday=0)
+        for semana in cal.monthdayscalendar(mes_actual.year, mes_actual.month):
+            fila = []
+            for dia_num in semana:
+                if dia_num == 0:
+                    fila.append(None)
+                    continue
+                fecha_dia = date(mes_actual.year, mes_actual.month, dia_num)
+                if fecha_dia < fecha_inicio or fecha_dia > fecha_fin:
+                    fila.append({"dia": dia_num, "fuera_de_rango": True})
+                elif fecha_dia.weekday() >= 5:
+                    fila.append({"dia": dia_num, "fin_de_semana": True})
+                else:
+                    fila.append(
+                        {
+                            "dia": dia_num,
+                            "estado": estado_por_dia.get(fecha_dia),
+                        }
+                    )
+            semanas.append(fila)
+        meses.append(
+            {
+                "nombre": calendar_module.month_name[mes_actual.month],
+                "anio": mes_actual.year,
+                "semanas": semanas,
+            }
+        )
+        if mes_actual.month == 12:
+            mes_actual = mes_actual.replace(year=mes_actual.year + 1, month=1)
+        else:
+            mes_actual = mes_actual.replace(month=mes_actual.month + 1)
+
+    return meses

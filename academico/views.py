@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView
 from accounts.models import CustomUser
 from accounts.services import capacidades_para
+from datetime import date
 
 from .forms import (
     AlumnoForm,
@@ -25,8 +26,12 @@ from .services import (
     asignar_cursos_activos,
     asignar_matriculas_activas,
     registrar_inscripcion,
+    anios_disponibles_alumno,
+    obtener_rango_bimestre,
     calcular_riesgo_asistencia, 
-    calcular_riesgo_rendimiento
+    calcular_riesgo_rendimiento,
+    notas_por_bimestre,
+    calendario_asistencia_bimestre,
 )
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -723,28 +728,91 @@ def portal_apoderado(request):
     except Apoderado.DoesNotExist:
         perfil_apoderado = None
 
-    hijos_data = []
     hijos = perfil_apoderado.alumnos.all() if perfil_apoderado else Alumno.objects.none()
 
-    for hijo in hijos:
-        riesgo_asistencia = calcular_riesgo_asistencia(hijo)
-        riesgo_rendimiento = calcular_riesgo_rendimiento(hijo)
-        alerta_activa = (
-            Alerta.objects.filter(alumno=hijo, activa=True)
-            .order_by("-nivel_riesgo", "-fcreacion")
-            .first()
-        )
-        hijos_data.append(
-            {
-                "alumno": hijo,
-                "riesgo_asistencia": riesgo_asistencia,
-                "riesgo_rendimiento": riesgo_rendimiento,
-                "alerta_activa": alerta_activa,
-            }
-        )
+    return render(request, "academico/portal_apoderado.html", {"hijos": hijos})
+
+def _hijo_de_apoderado_o_403(request, alumno_id):
+    if not request.user.is_active or request.user.rol != CustomUser.Rol.APODERADO:
+        raise PermissionDenied("No tiene permiso para ver esta seccion.")
+    try:
+        perfil_apoderado = request.user.perfil_apoderado
+    except Apoderado.DoesNotExist:
+        raise PermissionDenied("No tiene un perfil de apoderado asociado.")
+    alumno = get_object_or_404(perfil_apoderado.alumnos, pk=alumno_id)
+    return alumno
+
+
+@login_required
+def portal_apoderado_resumen(request, alumno_id):
+    alumno = _hijo_de_apoderado_o_403(request, alumno_id)
+
+    anios = anios_disponibles_alumno(alumno)
+    anio = int(request.GET.get("anio", anios[0] if anios else date.today().year))
+    bimestre = int(request.GET.get("bimestre", 1))
+
+    rango = obtener_rango_bimestre(anio, bimestre)
+    fecha_referencia = rango[0] if rango else date(anio, 1, 1)
+
+    riesgo_asistencia = calcular_riesgo_asistencia(alumno, fecha_referencia)
+    riesgo_rendimiento = calcular_riesgo_rendimiento(alumno, fecha_referencia)
 
     return render(
         request,
-        "academico/portal_apoderado.html",
-        {"hijos_data": hijos_data},
+        "academico/portal_apoderado_resumen.html",
+        {
+            "alumno": alumno,
+            "anio": anio,
+            "bimestre": bimestre,
+            "anios": anios,
+            "bimestres": [1, 2, 3, 4],
+            "riesgo_asistencia": riesgo_asistencia,
+            "riesgo_rendimiento": riesgo_rendimiento,
+        },
+    )
+
+@login_required
+def portal_apoderado_notas(request, alumno_id):
+    alumno = _hijo_de_apoderado_o_403(request, alumno_id)
+
+    anios = anios_disponibles_alumno(alumno)
+    anio = int(request.GET.get("anio", anios[0] if anios else date.today().year))
+    bimestre = int(request.GET.get("bimestre", 1))
+
+    datos_por_curso = notas_por_bimestre(alumno, anio, bimestre)
+
+    return render(
+        request,
+        "academico/portal_apoderado_notas.html",
+        {
+            "alumno": alumno,
+            "anio": anio,
+            "bimestre": bimestre,
+            "anios": anios,
+            "bimestres": [1, 2, 3, 4],
+            "datos_por_curso": datos_por_curso,
+        },
+    )
+
+@login_required
+def portal_apoderado_asistencia(request, alumno_id):
+    alumno = _hijo_de_apoderado_o_403(request, alumno_id)
+
+    anios = anios_disponibles_alumno(alumno)
+    anio = int(request.GET.get("anio", anios[0] if anios else date.today().year))
+    bimestre = int(request.GET.get("bimestre", 1))
+
+    meses = calendario_asistencia_bimestre(alumno, anio, bimestre)
+
+    return render(
+        request,
+        "academico/portal_apoderado_asistencia.html",
+        {
+            "alumno": alumno,
+            "anio": anio,
+            "bimestre": bimestre,
+            "anios": anios,
+            "bimestres": [1, 2, 3, 4],
+            "meses": meses,
+        },
     )

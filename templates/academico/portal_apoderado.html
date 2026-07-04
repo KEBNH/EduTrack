@@ -7,55 +7,23 @@
     </div>
 </div>
 
-{% if hijos_data %}
-<div class="row row-cols-1 row-cols-lg-2 g-3">
-    {% for item in hijos_data %}
+{% if hijos %}
+<div class="row row-cols-1 row-cols-md-3 g-3">
+    {% for hijo in hijos %}
     <div class="col">
-        <div class="card h-100">
-            <div class="card-header border-bottom d-flex align-items-center justify-content-between">
-                <h4 class="card-title mb-0">{{ item.alumno.apellidos }}, {{ item.alumno.nombres }}</h4>
-                {% if item.alerta_activa %}
-                    {% if item.alerta_activa.nivel_riesgo == "ALTO" %}
-                    <span class="badge bg-danger-subtle text-danger">Riesgo alto</span>
-                    {% elif item.alerta_activa.nivel_riesgo == "MEDIO" %}
-                    <span class="badge bg-warning-subtle text-warning">Riesgo medio</span>
-                    {% else %}
-                    <span class="badge bg-success-subtle text-success">Riesgo bajo</span>
-                    {% endif %}
-                {% else %}
-                <span class="badge bg-success-subtle text-success">Sin alertas</span>
-                {% endif %}
-            </div>
-            <div class="card-body">
-                <div class="row g-3 mb-3">
-                    <div class="col-6">
-                        <p class="text-muted mb-1">Asistencia (bimestre actual)</p>
-                        {% if item.riesgo_asistencia %}
-                        <h5 class="mb-0">{{ item.riesgo_asistencia.valor|floatformat:1 }}% faltas</h5>
-                        {% else %}
-                        <h5 class="mb-0 text-muted">Sin datos</h5>
-                        {% endif %}
+        <a href="{% url 'academico:portal_apoderado_resumen' hijo.pk %}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar-md mx-auto mb-2">
+                        <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-24">
+                            {{ hijo.nombres|first }}{{ hijo.apellidos|first }}
+                        </span>
                     </div>
-                    <div class="col-6">
-                        <p class="text-muted mb-1">Promedio (bimestre actual)</p>
-                        {% if item.riesgo_rendimiento %}
-                        <h5 class="mb-0">{{ item.riesgo_rendimiento.valor|floatformat:1 }}</h5>
-                        {% else %}
-                        <h5 class="mb-0 text-muted">Sin datos</h5>
-                        {% endif %}
-                    </div>
+                    <h5 class="mb-1">{{ hijo.apellidos }}, {{ hijo.nombres }}</h5>
+                    <p class="text-muted small mb-0">DNI {{ hijo.dni }}</p>
                 </div>
-                {% if item.riesgo_asistencia %}
-                <p class="text-muted small mb-1">{{ item.riesgo_asistencia.descripcion }}</p>
-                {% endif %}
-                {% if item.riesgo_rendimiento %}
-                <p class="text-muted small mb-0">{{ item.riesgo_rendimiento.descripcion }}</p>
-                {% endif %}
             </div>
-            <div class="card-footer">
-                <a class="btn btn-sm btn-primary" href="{% url 'academico:alerta_lista' %}">Ver historial de alertas</a>
-            </div>
-        </div>
+        </a>
     </div>
     {% endfor %}
 </div>

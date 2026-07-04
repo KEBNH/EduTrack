@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">{{ alumno.apellidos }}, {{ alumno.nombres }}</h4>
+    </div>
+    <a href="{% url 'academico:portal_apoderado' %}" class="btn btn-light btn-sm">Cambiar de hijo</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-1">Año</label>
+                <select name="anio" class="form-select" onchange="this.form.submit()">
+                    {% for a in anios %}
+                    <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-1">Bimestre</label>
+                <select name="bimestre" class="form-select" onchange="this.form.submit()">
+                    {% for b in bimestres %}
+                    <option value="{{ b }}" {% if b == bimestre %}selected{% endif %}>Bimestre {{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-3">
+    <div class="col">
+        <a href="{% url 'academico:portal_apoderado_notas' alumno.pk %}?anio={{ anio }}&bimestre={{ bimestre }}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <p class="text-muted mb-1">Promedio general</p>
+                    {% if riesgo_rendimiento %}
+                    <h1 class="display-4 mb-0">{{ riesgo_rendimiento.valor|floatformat:1 }}</h1>
+                    <p class="text-muted small mt-2 mb-0">{{ riesgo_rendimiento.descripcion }}</p>
+                    {% else %}
+                    <h1 class="display-4 mb-0 text-muted">-</h1>
+                    <p class="text-muted small mt-2 mb-0">Sin datos para este bimestre.</p>
+                    {% endif %}
+                    <p class="text-primary small mt-2 mb-0">Ver notas por curso →</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'academico:portal_apoderado_asistencia' alumno.pk %}?anio={{ anio }}&bimestre={{ bimestre }}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <p class="text-muted mb-1">Asistencia</p>
+                    {% if riesgo_asistencia %}
+                    <h1 class="display-4 mb-0">{{ riesgo_asistencia.valor|floatformat:1 }}% faltas</h1>
+                    <p class="text-muted small mt-2 mb-0">{{ riesgo_asistencia.descripcion }}</p>
+                    {% else %}
+                    <h1 class="display-4 mb-0 text-muted">-</h1>
+                    <p class="text-muted small mt-2 mb-0">Sin datos para este bimestre.</p>
+                    {% endif %}
+                    <p class="text-primary small mt-2 mb-0">Ver calendario →</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Notas — {{ alumno.apellidos }}, {{ alumno.nombres }}</h4>
+    </div>
+    <a href="{% url 'academico:portal_apoderado_resumen' alumno.pk %}?anio={{ anio }}&bimestre={{ bimestre }}" class="btn btn-light btn-sm">Volver al resumen</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-1">Año</label>
+                <select name="anio" class="form-select" onchange="this.form.submit()">
+                    {% for a in anios %}
+                    <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-1">Bimestre</label>
+                <select name="bimestre" class="form-select" onchange="this.form.submit()">
+                    {% for b in bimestres %}
+                    <option value="{{ b }}" {% if b == bimestre %}selected{% endif %}>Bimestre {{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if datos_por_curso %}
+{% for item in datos_por_curso %}
+<div class="card mb-3">
+    <div class="card-header border-bottom d-flex align-items-center justify-content-between">
+        <h4 class="card-title mb-0">{{ item.curso.nombre }}</h4>
+        <span class="badge bg-primary-subtle text-primary">Promedio: {{ item.promedio|floatformat:1 }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover text-nowrap mb-0">
+            <thead class="bg-light-subtle">
+                <tr>
+                    <th>Evaluación</th>
+                    <th>Calificación</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota in item.notas %}
+                <tr>
+                    <td>{{ nota.evaluacion }}</td>
+                    <td>{{ nota.calificacion }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted mb-0">No hay notas registradas para este bimestre.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

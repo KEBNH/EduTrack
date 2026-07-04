@@ -32,4 +32,7 @@ urlpatterns = [
     path("reportes/director/", views.reporte_director, name="reporte_director"),
     path("reportes/minedu/", views.reporte_minedu, name="reporte_minedu"),
     path("portal/", views.portal_apoderado, name="portal_apoderado"),
+    path("portal/<int:alumno_id>/", views.portal_apoderado_resumen, name="portal_apoderado_resumen"),
+    path("portal/<int:alumno_id>/notas/", views.portal_apoderado_notas, name="portal_apoderado_notas"),
+    path("portal/<int:alumno_id>/asistencia/", views.portal_apoderado_asistencia, name="portal_apoderado_asistencia"),
 ]
