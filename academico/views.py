@@ -20,7 +20,7 @@ from .forms import (
     MatriculaForm,
     NotaForm,
 )
-from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
+from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Institucion, Matricula, Nota
 from .services import (
     asignar_cursos_activos,
     asignar_matriculas_activas,
@@ -585,7 +585,6 @@ NIVEL_RIESGO_ORDEN = {
     Alerta.NivelRiesgo.BAJO: 1,
 }
 
-
 @login_required
 def reporte_director(request):
     if (
@@ -651,5 +650,63 @@ def reporte_director(request):
             "total_alto": total_alto,
             "total_alumnos": total_alumnos,
             "total_seguimiento": total_seguimiento,
+        },
+    )
+
+@login_required
+def reporte_minedu(request):
+    if not request.user.is_active or request.user.rol != CustomUser.Rol.MINEDU:
+        raise PermissionDenied("No tiene permiso para ver este reporte.")
+
+    instituciones = Institucion.objects.filter(activo=True).order_by("nombre")
+
+    alertas_activas = Alerta.objects.filter(activa=True)
+    nivel_por_alumno = {}
+    for alerta in alertas_activas.only("alumno_id", "institucion_id", "nivel_riesgo"):
+        clave = (alerta.institucion_id, alerta.alumno_id)
+        actual = nivel_por_alumno.get(clave)
+        if actual is None or NIVEL_RIESGO_ORDEN[alerta.nivel_riesgo] > NIVEL_RIESGO_ORDEN[actual]:
+            nivel_por_alumno[clave] = alerta.nivel_riesgo
+
+    filas = []
+    total_bajo = total_medio = total_alto = 0
+
+    for institucion in instituciones:
+        alumnos_ids = Matricula.objects.filter(
+            institucion=institucion, estado=Matricula.Estado.ACTIVA
+        ).values_list("alumno_id", flat=True)
+
+        bajo = medio = alto = 0
+        for alumno_id in alumnos_ids:
+            nivel = nivel_por_alumno.get((institucion.id, alumno_id))
+            if nivel == Alerta.NivelRiesgo.ALTO:
+                alto += 1
+            elif nivel == Alerta.NivelRiesgo.MEDIO:
+                medio += 1
+            else:
+                bajo += 1
+
+        filas.append(
+            {
+                "institucion": institucion,
+                "bajo": bajo,
+                "medio": medio,
+                "alto": alto,
+                "total": bajo + medio + alto,
+            }
+        )
+        total_bajo += bajo
+        total_medio += medio
+        total_alto += alto
+
+    return render(
+        request,
+        "academico/reporte_minedu.html",
+        {
+            "filas": filas,
+            "total_bajo": total_bajo,
+            "total_medio": total_medio,
+            "total_alto": total_alto,
+            "total_alumnos": total_bajo + total_medio + total_alto,
         },
     )
