@@ -52,18 +52,20 @@
             <div class="card-body">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                     <h4 class="card-title mb-0">Mis hijos asociados</h4>
-                    <a class="btn btn-primary btn-sm" href="{% url 'academico:alerta_lista' %}?estado=ACTIVA">
-                        Ver alertas activas
+                    <a class="btn btn-primary btn-sm" href="{% url 'academico:portal_apoderado' %}">
+                        Ir a mi portal
                     </a>
                 </div>
                 {% if hijos_apoderado %}
                 <div class="row g-2">
                     {% for hijo in hijos_apoderado %}
                     <div class="col-md-6 col-xl-4">
-                        <div class="border rounded p-2">
-                            <div class="fw-semibold">{{ hijo.apellidos }}, {{ hijo.nombres }}</div>
-                            <div class="text-muted small">DNI {{ hijo.dni }}</div>
-                        </div>
+                        <a href="{% url 'academico:portal_apoderado_resumen' hijo.pk %}" class="text-decoration-none">
+                            <div class="border rounded p-2">
+                                <div class="fw-semibold">{{ hijo.apellidos }}, {{ hijo.nombres }}</div>
+                                <div class="text-muted small">DNI {{ hijo.dni }}</div>
+                            </div>
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
