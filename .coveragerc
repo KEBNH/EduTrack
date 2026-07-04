@@ -1,0 +1,13 @@
+[run]
+source =
+    accounts
+    academico
+
+[report]
+fail_under = 80
+show_missing = True
+skip_covered = True
+omit =
+    */migrations/*
+    */tests.py
+    */admin.py
