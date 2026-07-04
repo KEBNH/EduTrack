@@ -5,6 +5,7 @@ from . import views
 app_name = "academico"
 
 urlpatterns = [
+    path("inscripciones/crear/", views.inscripcion_crear, name="inscripcion_crear"),
     path("alumnos/", views.AlumnoListView.as_view(), name="alumno_lista"),
     path("alumnos/crear/", views.AlumnoCreateView.as_view(), name="alumno_crear"),
     path("alumnos/<int:pk>/editar/", views.AlumnoUpdateView.as_view(), name="alumno_editar"),

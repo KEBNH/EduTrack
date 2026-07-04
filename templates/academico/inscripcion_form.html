@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">{{ titulo }}</h4>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h4 class="card-title mb-0">Datos de inscripcion</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <h5 class="fs-15 mb-3">Apoderado</h5>
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    {{ form.apoderado_usuario.label_tag }}
+                    {{ form.apoderado_usuario }}
+                    {% if form.apoderado_usuario.help_text %}<div class="form-text">{{ form.apoderado_usuario.help_text }}</div>{% endif %}
+                    {% for error in form.apoderado_usuario.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <h5 class="fs-15 mb-3 mt-2">Alumno</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.alumno_dni.label_tag }}
+                    {{ form.alumno_dni }}
+                    {% for error in form.alumno_dni.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.alumno_nombres.label_tag }}
+                    {{ form.alumno_nombres }}
+                    {% for error in form.alumno_nombres.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.alumno_apellidos.label_tag }}
+                    {{ form.alumno_apellidos }}
+                    {% for error in form.alumno_apellidos.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.alumno_fecha_nacimiento.label_tag }}
+                    {{ form.alumno_fecha_nacimiento }}
+                    {% for error in form.alumno_fecha_nacimiento.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-8 mb-3">
+                    {{ form.grado.label_tag }}
+                    {{ form.grado }}
+                    {% for error in form.grado.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <a class="btn btn-secondary" href="{% url 'academico:matricula_lista' %}">Cancelar</a>
+            <button class="btn btn-success" type="submit">Registrar inscripcion</button>
+        </form>
+    </div>
+</div>
+{% endblock contenido %}

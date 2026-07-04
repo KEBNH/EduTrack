@@ -1,9 +1,10 @@
 from datetime import date
 from io import StringIO
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import CustomUser
@@ -12,6 +13,7 @@ from .forms import ApoderadoForm, AsistenciaForm, MatriculaForm, NotaForm
 from .models import (
     Alerta,
     Alumno,
+    Apoderado,
     Asistencia,
     Curso,
     Grado,
@@ -1241,6 +1243,143 @@ class FlujoCursosTests(TestCase):
         self.assertFalse(curso_inactivo.activo)
         self.assertContains(response, "Datos del curso actualizados correctamente.")
 
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class InscripcionTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(
+            nombre="Colegio Inscripciones", codigo="IE-INS"
+        )
+        self.personal = CustomUser.objects.create_user(
+            email="personal-inscripciones@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90123456",
+            rol=CustomUser.Rol.PERSONAL_ACADEMICO,
+            institucion=self.institucion,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor-inscripciones@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90234567",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="Primero",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Matematica",
+            codigo="INS-MAT",
+            grado=self.grado,
+            profesor=self.profesor,
+        )
+        self.apoderado_usuario = CustomUser.objects.create_user(
+            email="maria.torres@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90345678",
+            first_name="Maria",
+            last_name="Torres",
+            celular="987654321",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        self.apoderado_usuario.set_unusable_password()
+        self.apoderado_usuario.save(update_fields=("password",))
+
+    def datos_inscripcion(self, alumno_dni="90567890", alumno_nombres="Ana"):
+        return {
+            "apoderado_usuario": self.apoderado_usuario.pk,
+            "alumno_dni": alumno_dni,
+            "alumno_nombres": alumno_nombres,
+            "alumno_apellidos": "Torres",
+            "alumno_fecha_nacimiento": "2012-05-10",
+            "grado": self.grado.pk,
+        }
+
+    def test_personal_registra_inscripcion_completa(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        self.assertRedirects(response, reverse("academico:matricula_lista"))
+        usuario = CustomUser.objects.get(email="maria.torres@edutrack.test")
+        apoderado = usuario.perfil_apoderado
+        alumno = Alumno.objects.get(dni="90567890")
+        matricula = Matricula.objects.get(alumno=alumno)
+
+        self.assertEqual(usuario.rol, CustomUser.Rol.APODERADO)
+        self.assertFalse(usuario.has_usable_password())
+        self.assertEqual(apoderado.nombres, usuario.first_name)
+        self.assertEqual(apoderado.correo, usuario.email)
+        self.assertEqual(apoderado.institucion, self.institucion)
+        self.assertIn(alumno, apoderado.alumnos.all())
+        self.assertEqual(matricula.grado, self.grado)
+        self.assertTrue(
+            MatriculaCurso.objects.filter(matricula=matricula, curso=self.curso).exists()
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_inscripcion_reutiliza_apoderado_para_otro_hijo(self):
+        self.client.force_login(self.personal)
+        self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(alumno_dni="90678901", alumno_nombres="Luis"),
+        )
+
+        self.assertRedirects(response, reverse("academico:matricula_lista"))
+        usuario = CustomUser.objects.get(email="maria.torres@edutrack.test")
+        apoderado = usuario.perfil_apoderado
+
+        self.assertEqual(
+            CustomUser.objects.filter(rol=CustomUser.Rol.APODERADO).count(),
+            1,
+        )
+        self.assertEqual(apoderado.alumnos.count(), 2)
+        self.assertEqual(Matricula.objects.count(), 2)
+
+    def test_inscripcion_no_permite_seleccionar_usuario_de_otra_institucion(self):
+        otra_institucion = Institucion.objects.create(
+            nombre="Colegio Externo", codigo="IE-INS-EXT"
+        )
+        apoderado_externo = CustomUser.objects.create_user(
+            email="externo@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90890123",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=otra_institucion,
+        )
+        self.client.force_login(self.personal)
+
+        datos = self.datos_inscripcion()
+        datos["apoderado_usuario"] = apoderado_externo.pk
+        response = self.client.post(reverse("academico:inscripcion_crear"), datos)
+
+        self.assertIn("apoderado_usuario", response.context["form"].errors)
+        self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
+
+    def test_menu_personal_muestra_inscripciones_y_oculta_altas_separadas(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertContains(response, reverse("academico:inscripcion_crear"))
+        self.assertNotContains(response, reverse("academico:alumno_lista"))
+        self.assertNotContains(response, reverse("academico:apoderado_lista"))
+
+
 class MotorSATTests(TestCase):
     def setUp(self):
         self.institucion = Institucion.objects.create(
@@ -1494,6 +1633,24 @@ class VisualizacionAlertasTests(TestCase):
             apellidos="Externo",
             fecha_nacimiento=date(2012, 7, 10),
         )
+        self.alumno_no_asociado = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="44445557",
+            nombres="Alumno",
+            apellidos="No Asociado",
+            fecha_nacimiento=date(2012, 8, 10),
+        )
+        self.perfil_apoderado = Apoderado.objects.create(
+            institucion=self.institucion,
+            usuario=self.apoderado,
+            dni=self.apoderado.dni,
+            nombres=self.apoderado.first_name,
+            apellidos=self.apoderado.last_name,
+            celular="987654321",
+            correo=self.apoderado.email,
+            parentesco=Apoderado.Parentesco.OTRO,
+        )
+        self.perfil_apoderado.alumnos.add(self.alumno)
         self.grado = Grado.objects.create(
             institucion=self.institucion,
             nivel=Grado.Nivel.SECUNDARIA,
@@ -1531,6 +1688,13 @@ class VisualizacionAlertasTests(TestCase):
             tipo=Alerta.Tipo.ASISTENCIA,
             nivel_riesgo=Alerta.NivelRiesgo.ALTO,
             descripcion="Alerta externa.",
+        )
+        self.alerta_no_asociada = Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno_no_asociado,
+            tipo=Alerta.Tipo.ASISTENCIA,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Alerta de alumno no asociado.",
         )
 
     def test_lista_alertas_muestra_solo_institucion_del_usuario(self):
@@ -1588,20 +1752,26 @@ class VisualizacionAlertasTests(TestCase):
         self.assertContains(response, "Promedio bajo detectado.")
         self.assertNotContains(response, "Alerta externa.")
 
-    def test_dashboard_apoderado_no_ve_popup_de_alertas(self):
+    def test_dashboard_apoderado_muestra_hijos_y_popup_de_alertas(self):
         self.client.force_login(self.apoderado)
 
         response = self.client.get(reverse("inicio"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "alertasPopupModal")
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Alerta, Rosa")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta de alumno no asociado.")
 
-    def test_apoderado_no_puede_ver_alertas(self):
+    def test_apoderado_ve_solo_alertas_de_sus_hijos(self):
         self.client.force_login(self.apoderado)
 
         response = self.client.get(reverse("academico:alerta_lista"))
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta de alumno no asociado.")
+        self.assertNotContains(response, "Alerta externa.")
 
     def test_personal_puede_cerrar_alerta_con_post(self):
         self.client.force_login(self.personal)
@@ -1616,6 +1786,17 @@ class VisualizacionAlertasTests(TestCase):
 
     def test_profesor_no_puede_cerrar_alerta(self):
         self.client.force_login(self.profesor)
+
+        response = self.client.post(
+            reverse("academico:alerta_cerrar", args=[self.alerta.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.alerta.refresh_from_db()
+        self.assertTrue(self.alerta.activa)
+
+    def test_apoderado_no_puede_cerrar_alerta(self):
+        self.client.force_login(self.apoderado)
 
         response = self.client.post(
             reverse("academico:alerta_cerrar", args=[self.alerta.pk])

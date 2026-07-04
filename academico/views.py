@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
@@ -16,11 +16,16 @@ from .forms import (
     AsistenciaForm,
     CursoForm,
     GradoForm,
+    InscripcionForm,
     MatriculaForm,
     NotaForm,
 )
 from .models import Alerta, Alumno, Apoderado, Asistencia, Curso, Grado, Matricula, Nota
-from .services import asignar_cursos_activos, asignar_matriculas_activas
+from .services import (
+    asignar_cursos_activos,
+    asignar_matriculas_activas,
+    registrar_inscripcion,
+)
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
 ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO}
@@ -33,6 +38,7 @@ ROLES_ALERTAS = {
     CustomUser.Rol.DIRECTOR,
     CustomUser.Rol.PROFESOR,
     CustomUser.Rol.PERSONAL_ACADEMICO,
+    CustomUser.Rol.APODERADO,
 }
 ROLES_CIERRE_ALERTAS = {
     CustomUser.Rol.DIRECTOR,
@@ -54,6 +60,8 @@ def alertas_visibles_para(usuario):
         queryset = queryset.filter(
             alumno__matriculas__cursos_matriculados__curso__profesor=usuario
         ).distinct()
+    elif usuario.rol == CustomUser.Rol.APODERADO:
+        queryset = queryset.filter(alumno__apoderados__usuario=usuario).distinct()
     return queryset
 
 @login_required
@@ -78,6 +86,15 @@ def inicio(request):
                 "recientes": list(alertas_activas[:5]),
             }
             request.session[ALERTAS_POPUP_SESSION_KEY] = True
+
+    if request.user.rol == CustomUser.Rol.APODERADO:
+        try:
+            perfil_apoderado = request.user.perfil_apoderado
+        except Apoderado.DoesNotExist:
+            perfil_apoderado = None
+        context["hijos_apoderado"] = (
+            perfil_apoderado.alumnos.all() if perfil_apoderado else Alumno.objects.none()
+        )
 
     return render(
         request,
@@ -215,6 +232,41 @@ class ApoderadoUpdateView(FormularioInstitucionalMixin, UpdateView):
     roles_permitidos = ROL_PERSONAL
     titulo = "Editar padre/apoderado"
     url_lista = "academico:apoderado_lista"
+
+
+@login_required
+def inscripcion_crear(request):
+    if (
+        not request.user.is_active
+        or request.user.rol != CustomUser.Rol.PERSONAL_ACADEMICO
+        or request.user.institucion_id is None
+    ):
+        raise PermissionDenied("No tiene permiso para registrar inscripciones.")
+
+    if request.method == "POST":
+        form = InscripcionForm(request.POST, usuario_actual=request.user)
+        if form.is_valid():
+            try:
+                registrar_inscripcion(
+                    usuario_actual=request.user,
+                    datos=form.cleaned_data,
+                )
+            except ValidationError as exc:
+                form.add_error(None, exc)
+            else:
+                messages.success(
+                    request,
+                    "Inscripcion registrada y apoderado vinculado correctamente.",
+                )
+                return redirect("academico:matricula_lista")
+    else:
+        form = InscripcionForm(usuario_actual=request.user)
+
+    return render(
+        request,
+        "academico/inscripcion_form.html",
+        {"form": form, "titulo": "Registrar inscripcion"},
+    )
 
 
 class GradoListView(ListaInstitucionalMixin, ListView):

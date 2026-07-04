@@ -2,10 +2,22 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Avg
 
-from .models import Alerta, Asistencia, Curso, Matricula, MatriculaCurso, Nota
+from accounts.models import CustomUser
+
+from .models import (
+    Alerta,
+    Alumno,
+    Apoderado,
+    Asistencia,
+    Curso,
+    Matricula,
+    MatriculaCurso,
+    Nota,
+)
 
 BIMESTRES = (
     (1, (3, 1), (4, 30)),
@@ -78,6 +90,174 @@ def asignar_matriculas_activas(curso):
             for matricula in matriculas
             if matricula.pk not in existentes
         ]
+    )
+
+
+@dataclass(frozen=True)
+class ResultadoInscripcion:
+    usuario: CustomUser
+    apoderado: Apoderado
+    alumno: Alumno
+    matricula: Matricula
+    alumno_creado: bool
+    apoderado_creado: bool
+    matricula_creada: bool
+
+
+def _validar_usuario_apoderado(usuario, institucion):
+    if usuario.rol != CustomUser.Rol.APODERADO:
+        raise ValidationError("El usuario seleccionado no tiene rol Padre/Apoderado.")
+    if usuario.institucion_id != institucion.id:
+        raise ValidationError(
+            "El usuario seleccionado pertenece a otra institucion."
+        )
+    if not usuario.is_active:
+        raise ValidationError("El usuario seleccionado esta inactivo.")
+
+
+def _datos_perfil_apoderado(usuario):
+    return {
+        "nombres": usuario.first_name,
+        "apellidos": usuario.last_name,
+        "celular": usuario.celular,
+        "correo": usuario.email,
+        "activo": True,
+    }
+
+
+def _actualizar_perfil_apoderado(apoderado, usuario):
+    apoderado.usuario = usuario
+    apoderado.dni = usuario.dni
+    for campo, valor in _datos_perfil_apoderado(usuario).items():
+        setattr(apoderado, campo, valor)
+    apoderado.save(
+        update_fields=(
+            "usuario",
+            "dni",
+            "nombres",
+            "apellidos",
+            "celular",
+            "correo",
+            "activo",
+            "fmodificacion",
+        )
+    )
+
+
+def _crear_o_actualizar_perfil_apoderado(*, usuario, institucion):
+    _validar_usuario_apoderado(usuario, institucion)
+
+    try:
+        apoderado = usuario.perfil_apoderado
+    except Apoderado.DoesNotExist:
+        apoderado = None
+
+    if apoderado:
+        if apoderado.institucion_id != institucion.id:
+            raise ValidationError(
+                "El perfil del apoderado pertenece a otra institucion."
+            )
+        _actualizar_perfil_apoderado(apoderado, usuario)
+        return apoderado, False
+
+    apoderado = Apoderado.objects.filter(
+        institucion=institucion,
+        dni=usuario.dni,
+    ).first()
+    if apoderado:
+        if apoderado.usuario_id and apoderado.usuario_id != usuario.id:
+            raise ValidationError(
+                "El perfil del apoderado esta vinculado a otro usuario."
+            )
+        _actualizar_perfil_apoderado(apoderado, usuario)
+        return apoderado, False
+
+    return Apoderado.objects.create(
+        institucion=institucion,
+        usuario=usuario,
+        dni=usuario.dni,
+        parentesco=Apoderado.Parentesco.OTRO,
+        **_datos_perfil_apoderado(usuario),
+    ), True
+
+
+@transaction.atomic
+def registrar_inscripcion(*, usuario_actual, datos):
+    if (
+        not usuario_actual.is_authenticated
+        or not usuario_actual.is_active
+        or usuario_actual.rol != CustomUser.Rol.PERSONAL_ACADEMICO
+        or usuario_actual.institucion_id is None
+    ):
+        raise PermissionDenied("No tiene permiso para registrar inscripciones.")
+
+    institucion = usuario_actual.institucion
+    grado = datos["grado"]
+    if grado.institucion_id != institucion.id or not grado.activo:
+        raise ValidationError("El grado seleccionado no esta disponible.")
+
+    usuario = datos["apoderado_usuario"]
+    apoderado, apoderado_creado = _crear_o_actualizar_perfil_apoderado(
+        usuario=usuario,
+        institucion=institucion,
+    )
+
+    alumno, alumno_creado = Alumno.objects.get_or_create(
+        institucion=institucion,
+        dni=datos["alumno_dni"],
+        defaults={
+            "nombres": datos["alumno_nombres"],
+            "apellidos": datos["alumno_apellidos"],
+            "fecha_nacimiento": datos["alumno_fecha_nacimiento"],
+            "activo": True,
+        },
+    )
+    if not alumno_creado:
+        alumno.nombres = datos["alumno_nombres"]
+        alumno.apellidos = datos["alumno_apellidos"]
+        alumno.fecha_nacimiento = datos["alumno_fecha_nacimiento"]
+        alumno.activo = True
+        alumno.save(
+            update_fields=(
+                "nombres",
+                "apellidos",
+                "fecha_nacimiento",
+                "activo",
+                "fmodificacion",
+            )
+        )
+
+    apoderado.alumnos.add(alumno)
+
+    matricula = Matricula.objects.filter(
+        institucion=institucion,
+        alumno=alumno,
+        anio_academico=grado.anio_academico,
+    ).first()
+    if matricula:
+        if matricula.grado_id != grado.id:
+            raise ValidationError(
+                "El alumno ya tiene una matricula para este anio academico."
+            )
+        matricula_creada = False
+    else:
+        matricula = Matricula.objects.create(
+            institucion=institucion,
+            alumno=alumno,
+            grado=grado,
+            estado=Matricula.Estado.ACTIVA,
+        )
+        asignar_cursos_activos(matricula)
+        matricula_creada = True
+
+    return ResultadoInscripcion(
+        usuario=usuario,
+        apoderado=apoderado,
+        alumno=alumno,
+        matricula=matricula,
+        alumno_creado=alumno_creado,
+        apoderado_creado=apoderado_creado,
+        matricula_creada=matricula_creada,
     )
 
 
