@@ -10,6 +10,7 @@ from academico.models import Institucion
 
 from .models import CustomUser
 from .tokens import activation_token_generator
+from .validators import validar_datos_usuario
 
 
 ROLES_QUE_PUEDE_CREAR = {
@@ -52,11 +53,12 @@ CAPACIDADES_POR_ROL = {
         "Registrar y actualizar asistencias y notas de sus cursos.",
     ],
     CustomUser.Rol.PERSONAL_ACADEMICO: [
-        "Gestionar alumnos, apoderados, grados, cursos y matriculas.",
+        "Registrar inscripciones con apoderado, alumno y matricula.",
+        "Gestionar grados, cursos y matriculas.",
         "Registrar y actualizar asistencias y notas.",
     ],
     CustomUser.Rol.APODERADO: [
-        "Actualmente no tiene modulos de consulta habilitados.",
+        "Consultar alertas activas asociadas a sus hijos.",
     ],
 }
 
@@ -115,16 +117,21 @@ def determinar_institucion_usuario(usuario_actual, rol_objetivo):
 
 @transaction.atomic
 def crear_usuario(*, usuario_actual, datos):
-    rol_objetivo = datos["rol"]
+    datos_validados = validar_datos_usuario(
+        datos,
+        roles_validos=CustomUser.Rol.values,
+        requerir_rol=True,
+    )
+    rol_objetivo = datos_validados["rol"]
     if not puede_crear_usuario(usuario_actual, rol_objetivo):
         raise PermissionDenied("No tiene permiso para crear usuarios con este rol.")
 
     usuario = CustomUser(
-        email=datos["email"],
-        dni=datos["dni"],
-        first_name=datos["first_name"],
-        last_name=datos["last_name"],
-        celular=datos.get("celular", ""),
+        email=datos_validados["email"],
+        dni=datos_validados["dni"],
+        first_name=datos_validados["first_name"],
+        last_name=datos_validados["last_name"],
+        celular=datos_validados["celular"],
         rol=rol_objetivo,
         institucion=determinar_institucion_usuario(usuario_actual, rol_objetivo),
         created_by=usuario_actual,

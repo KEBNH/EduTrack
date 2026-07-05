@@ -1,9 +1,10 @@
 from datetime import date
 from io import StringIO
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import CustomUser
@@ -12,6 +13,7 @@ from .forms import ApoderadoForm, AsistenciaForm, MatriculaForm, NotaForm
 from .models import (
     Alerta,
     Alumno,
+    Apoderado,
     Asistencia,
     Curso,
     Grado,
@@ -356,6 +358,40 @@ class FlujoMatriculaCursoTests(TestCase):
             matricula.cursos_matriculados.values_list("curso_id", flat=True),
             [self.curso_activo.pk],
         )
+
+    def test_crear_curso_asigna_matriculas_activas_del_grado(self):
+        matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:curso_crear"),
+            {
+                "nombre": "Ciencia y tecnologia",
+                "codigo": "CTA-01",
+                "grado": self.grado.pk,
+                "profesor": self.profesor.pk,
+                "activo": "on",
+            },
+        )
+
+        self.assertRedirects(response, reverse("academico:curso_lista"))
+        curso = Curso.objects.get(codigo="CTA-01")
+        matricula_curso = MatriculaCurso.objects.get(
+            matricula=matricula,
+            curso=curso,
+        )
+        asistencia_form = AsistenciaForm(usuario_actual=self.profesor)
+        nota_form = NotaForm(usuario_actual=self.profesor)
+
+        self.assertIn(
+            matricula_curso,
+            asistencia_form.fields["matricula_curso"].queryset,
+        )
+        self.assertIn(matricula_curso, nota_form.fields["matricula_curso"].queryset)
 
     def test_sincronizar_matricula_no_duplica_cursos_existentes(self):
         self.client.force_login(self.personal)
@@ -1207,6 +1243,158 @@ class FlujoCursosTests(TestCase):
         self.assertFalse(curso_inactivo.activo)
         self.assertContains(response, "Datos del curso actualizados correctamente.")
 
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class InscripcionTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(
+            nombre="Colegio Inscripciones", codigo="IE-INS"
+        )
+        self.personal = CustomUser.objects.create_user(
+            email="personal-inscripciones@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90123456",
+            rol=CustomUser.Rol.PERSONAL_ACADEMICO,
+            institucion=self.institucion,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor-inscripciones@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90234567",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="Primero",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Matematica",
+            codigo="INS-MAT",
+            grado=self.grado,
+            profesor=self.profesor,
+        )
+        self.apoderado_usuario = CustomUser.objects.create_user(
+            email="maria.torres@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90345678",
+            first_name="Maria",
+            last_name="Torres",
+            celular="987654321",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        self.apoderado_usuario.set_unusable_password()
+        self.apoderado_usuario.save(update_fields=("password",))
+
+    def datos_inscripcion(self, alumno_dni="90567890", alumno_nombres="Ana"):
+        return {
+            "apoderado_usuario": self.apoderado_usuario.pk,
+            "alumno_dni": alumno_dni,
+            "alumno_nombres": alumno_nombres,
+            "alumno_apellidos": "Torres",
+            "alumno_fecha_nacimiento": "2012-05-10",
+            "grado": self.grado.pk,
+        }
+
+    def test_personal_registra_inscripcion_completa(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        self.assertRedirects(response, reverse("academico:matricula_lista"))
+        usuario = CustomUser.objects.get(email="maria.torres@edutrack.test")
+        apoderado = usuario.perfil_apoderado
+        alumno = Alumno.objects.get(dni="90567890")
+        matricula = Matricula.objects.get(alumno=alumno)
+
+        self.assertEqual(usuario.rol, CustomUser.Rol.APODERADO)
+        self.assertFalse(usuario.has_usable_password())
+        self.assertEqual(apoderado.nombres, usuario.first_name)
+        self.assertEqual(apoderado.correo, usuario.email)
+        self.assertEqual(apoderado.institucion, self.institucion)
+        self.assertIn(alumno, apoderado.alumnos.all())
+        self.assertEqual(matricula.grado, self.grado)
+        self.assertTrue(
+            MatriculaCurso.objects.filter(matricula=matricula, curso=self.curso).exists()
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_inscripcion_reutiliza_apoderado_para_otro_hijo(self):
+        self.client.force_login(self.personal)
+        self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(alumno_dni="90678901", alumno_nombres="Luis"),
+        )
+
+        self.assertRedirects(response, reverse("academico:matricula_lista"))
+        usuario = CustomUser.objects.get(email="maria.torres@edutrack.test")
+        apoderado = usuario.perfil_apoderado
+
+        self.assertEqual(
+            CustomUser.objects.filter(rol=CustomUser.Rol.APODERADO).count(),
+            1,
+        )
+        self.assertEqual(apoderado.alumnos.count(), 2)
+        self.assertEqual(Matricula.objects.count(), 2)
+
+    def test_inscripcion_no_permite_seleccionar_usuario_de_otra_institucion(self):
+        otra_institucion = Institucion.objects.create(
+            nombre="Colegio Externo", codigo="IE-INS-EXT"
+        )
+        apoderado_externo = CustomUser.objects.create_user(
+            email="externo@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="90890123",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=otra_institucion,
+        )
+        self.client.force_login(self.personal)
+
+        datos = self.datos_inscripcion()
+        datos["apoderado_usuario"] = apoderado_externo.pk
+        response = self.client.post(reverse("academico:inscripcion_crear"), datos)
+
+        self.assertIn("apoderado_usuario", response.context["form"].errors)
+        self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
+
+    def test_inscripcion_no_crea_perfil_si_apoderado_no_tiene_celular(self):
+        self.apoderado_usuario.celular = ""
+        self.apoderado_usuario.save(update_fields=("celular", "fmodificacion"))
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("__all__", response.context["form"].errors)
+        self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
+        self.assertFalse(hasattr(self.apoderado_usuario, "perfil_apoderado"))
+
+    def test_menu_personal_muestra_inscripciones_y_oculta_altas_separadas(self):
+        self.client.force_login(self.personal)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertContains(response, reverse("academico:inscripcion_crear"))
+        self.assertNotContains(response, reverse("academico:alumno_lista"))
+        self.assertNotContains(response, reverse("academico:apoderado_lista"))
+
+
 class MotorSATTests(TestCase):
     def setUp(self):
         self.institucion = Institucion.objects.create(
@@ -1460,6 +1648,24 @@ class VisualizacionAlertasTests(TestCase):
             apellidos="Externo",
             fecha_nacimiento=date(2012, 7, 10),
         )
+        self.alumno_no_asociado = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="44445557",
+            nombres="Alumno",
+            apellidos="No Asociado",
+            fecha_nacimiento=date(2012, 8, 10),
+        )
+        self.perfil_apoderado = Apoderado.objects.create(
+            institucion=self.institucion,
+            usuario=self.apoderado,
+            dni=self.apoderado.dni,
+            nombres=self.apoderado.first_name,
+            apellidos=self.apoderado.last_name,
+            celular="987654321",
+            correo=self.apoderado.email,
+            parentesco=Apoderado.Parentesco.OTRO,
+        )
+        self.perfil_apoderado.alumnos.add(self.alumno)
         self.grado = Grado.objects.create(
             institucion=self.institucion,
             nivel=Grado.Nivel.SECUNDARIA,
@@ -1498,6 +1704,13 @@ class VisualizacionAlertasTests(TestCase):
             nivel_riesgo=Alerta.NivelRiesgo.ALTO,
             descripcion="Alerta externa.",
         )
+        self.alerta_no_asociada = Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno_no_asociado,
+            tipo=Alerta.Tipo.ASISTENCIA,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Alerta de alumno no asociado.",
+        )
 
     def test_lista_alertas_muestra_solo_institucion_del_usuario(self):
         self.client.force_login(self.director)
@@ -1524,12 +1737,56 @@ class VisualizacionAlertasTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Promedio bajo detectado.")
 
-    def test_apoderado_no_puede_ver_alertas(self):
+    def test_dashboard_muestra_popup_de_alertas_activas(self):
+        self.client.force_login(self.director)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Hay alertas SAT pendientes de revision.")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta externa.")
+
+    def test_dashboard_no_repite_popup_en_la_misma_sesion(self):
+        self.client.force_login(self.director)
+
+        primera_respuesta = self.client.get(reverse("inicio"))
+        segunda_respuesta = self.client.get(reverse("inicio"))
+
+        self.assertContains(primera_respuesta, "alertasPopupModal")
+        self.assertNotContains(segunda_respuesta, "alertasPopupModal")
+
+    def test_dashboard_profesor_solo_ve_popup_de_sus_alertas(self):
+        self.client.force_login(self.profesor)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta externa.")
+
+    def test_dashboard_apoderado_muestra_hijos_y_popup_de_alertas(self):
+        self.client.force_login(self.apoderado)
+
+        response = self.client.get(reverse("inicio"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alertasPopupModal")
+        self.assertContains(response, "Alerta, Rosa")
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta de alumno no asociado.")
+
+    def test_apoderado_ve_solo_alertas_de_sus_hijos(self):
         self.client.force_login(self.apoderado)
 
         response = self.client.get(reverse("academico:alerta_lista"))
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Promedio bajo detectado.")
+        self.assertNotContains(response, "Alerta de alumno no asociado.")
+        self.assertNotContains(response, "Alerta externa.")
 
     def test_personal_puede_cerrar_alerta_con_post(self):
         self.client.force_login(self.personal)
@@ -1553,6 +1810,17 @@ class VisualizacionAlertasTests(TestCase):
         self.alerta.refresh_from_db()
         self.assertTrue(self.alerta.activa)
 
+    def test_apoderado_no_puede_cerrar_alerta(self):
+        self.client.force_login(self.apoderado)
+
+        response = self.client.post(
+            reverse("academico:alerta_cerrar", args=[self.alerta.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.alerta.refresh_from_db()
+        self.assertTrue(self.alerta.activa)
+
     def test_cerrar_alerta_requiere_post(self):
         self.client.force_login(self.personal)
 
@@ -1563,3 +1831,365 @@ class VisualizacionAlertasTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.alerta.refresh_from_db()
         self.assertTrue(self.alerta.activa)
+
+class ReporteDirectorTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Test", codigo="IE-T01")
+        self.director = CustomUser.objects.create_user(
+            email="director@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="99998888",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="11223344",
+            nombres="Test",
+            apellidos="Alumno",
+            fecha_nacimiento="2010-01-01",
+        )
+        Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Riesgo alto de prueba",
+        )
+        self.client.force_login(self.director)
+
+    def test_director_ve_reporte_de_su_institucion(self):
+        response = self.client.get(reverse("academico:reporte_director"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_alto"], 1)
+        self.assertEqual(response.context["total_seguimiento"], 1)
+
+    def test_otro_rol_no_puede_ver_reporte(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="77776666",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(reverse("academico:reporte_director"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_minedu_puede_elegir_institucion(self):
+        minedu_user = CustomUser.objects.create_user(
+            email="minedu2@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="20202020",
+            rol=CustomUser.Rol.MINEDU,
+        )
+        self.client.force_login(minedu_user)
+
+        response = self.client.get(
+            reverse("academico:reporte_director"), {"institucion": self.institucion.pk}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["institucion"], self.institucion)
+
+class PortalApoderadoTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Test", codigo="IE-T02")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.hijo = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="55667788",
+            nombres="Junior",
+            apellidos="Gomez",
+            fecha_nacimiento="2012-01-01",
+        )
+        self.otro_alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="99001122",
+            nombres="Otro",
+            apellidos="Alumno",
+            fecha_nacimiento="2012-01-01",
+        )
+        Matricula.objects.create(institucion=self.institucion, alumno=self.hijo, grado=self.grado)
+
+        self.apoderado_user = CustomUser.objects.create_user(
+            email="apoderado@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="12121212",
+            rol=CustomUser.Rol.APODERADO,
+            institucion=self.institucion,
+        )
+        self.perfil_apoderado = Apoderado.objects.create(
+            institucion=self.institucion,
+            usuario=self.apoderado_user,
+            dni="12121212",
+            nombres="Horacio",
+            apellidos="Gomez",
+            celular="987654321",
+            parentesco=Apoderado.Parentesco.PADRE,
+        )
+        self.perfil_apoderado.alumnos.add(self.hijo)
+
+    def test_apoderado_ve_solo_sus_hijos(self):
+        self.client.force_login(self.apoderado_user)
+
+        response = self.client.get(reverse("academico:portal_apoderado"))
+
+        self.assertEqual(response.status_code, 200)
+        hijos_pks = [hijo.pk for hijo in response.context["hijos"]]
+        self.assertIn(self.hijo.pk, hijos_pks)
+        self.assertNotIn(self.otro_alumno.pk, hijos_pks)
+
+    def test_otro_rol_no_puede_ver_portal(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor2@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="66665555",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(reverse("academico:portal_apoderado"))
+
+        self.assertEqual(response.status_code, 403)
+    
+    def test_resumen_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_notas_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_notas", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_notas", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_asistencia_solo_accesible_para_su_propio_hijo(self):
+        self.client.force_login(self.apoderado_user)
+
+        response_propio = self.client.get(
+            reverse("academico:portal_apoderado_asistencia", args=[self.hijo.pk])
+        )
+        response_ajeno = self.client.get(
+            reverse("academico:portal_apoderado_asistencia", args=[self.otro_alumno.pk])
+        )
+
+        self.assertEqual(response_propio.status_code, 200)
+        self.assertEqual(response_ajeno.status_code, 404)
+
+    def test_otro_rol_no_puede_ver_resumen(self):
+        profesor = CustomUser.objects.create_user(
+            email="profesor3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="55554444",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(profesor)
+
+        response = self.client.get(
+            reverse("academico:portal_apoderado_resumen", args=[self.hijo.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+class AsistenciaFechaValidacionTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Fechas", codigo="IE-F01")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.curso = Curso.objects.create(
+            institucion=self.institucion,
+            nombre="Matematica",
+            codigo="MAT1",
+            grado=self.grado,
+        )
+        self.alumno = Alumno.objects.create(
+            institucion=self.institucion,
+            dni="10203040",
+            nombres="Test",
+            apellidos="Fecha",
+            fecha_nacimiento="2011-01-01",
+        )
+        self.matricula = Matricula.objects.create(
+            institucion=self.institucion, alumno=self.alumno, grado=self.grado
+        )
+        self.matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion, matricula=self.matricula, curso=self.curso
+        )
+
+    def test_rechaza_asistencia_en_fin_de_semana(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 3, 7),  # sabado
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        with self.assertRaises(ValidationError):
+            asistencia.full_clean()
+
+    def test_rechaza_asistencia_fuera_de_bimestre(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 12, 31),
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        with self.assertRaises(ValidationError):
+            asistencia.full_clean()
+
+    def test_acepta_fecha_valida_dentro_de_bimestre(self):
+        asistencia = Asistencia(
+            institucion=self.institucion,
+            matricula_curso=self.matricula_curso,
+            fecha=date(2026, 3, 10),  # martes, dentro del bimestre 1
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        asistencia.full_clean()
+
+class ReporteMineduTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Nacional Test", codigo="IE-N01")
+        self.minedu_user = CustomUser.objects.create_user(
+            email="minedu3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="30303030",
+            rol=CustomUser.Rol.MINEDU,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+
+        self.alumnos = []
+        for i in range(4):
+            alumno = Alumno.objects.create(
+                institucion=self.institucion,
+                dni=f"4000000{i}",
+                nombres=f"Alumno{i}",
+                apellidos="Test",
+                fecha_nacimiento="2011-01-01",
+            )
+            Matricula.objects.create(institucion=self.institucion, alumno=alumno, grado=self.grado)
+            self.alumnos.append(alumno)
+
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumnos[0],
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Riesgo alto de prueba",
+        )
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumnos[1],
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.MEDIO,
+            descripcion="Riesgo medio de prueba",
+        )
+
+        self.client.force_login(self.minedu_user)
+
+    def test_calcula_porcentajes_y_riesgo_final(self):
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        self.assertEqual(response.status_code, 200)
+        fila = response.context["filas"][0]
+
+        self.assertEqual(fila["total"], 4)
+        self.assertEqual(fila["alto"], 1)
+        self.assertEqual(fila["medio"], 1)
+        self.assertEqual(fila["bajo"], 2)
+        # riesgo_final = (1*1 + 1*2) / (4*2) * 100 = 37.5
+        self.assertAlmostEqual(fila["riesgo_final_pct"], 37.5)
+        self.assertEqual(fila["riesgo_final_nivel"], Alerta.NivelRiesgo.MEDIO)
+
+    def test_director_no_puede_ver_reporte_nacional(self):
+        director = CustomUser.objects.create_user(
+            email="director3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="88887777",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(director)
+
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_calcula_riesgo_nacional_agregado(self):
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        # total_medio=1, total_alto=1, total_alumnos=4
+        # riesgo_nacional = (1*1 + 1*2) / (4*2) * 100 = 37.5
+        self.assertAlmostEqual(response.context["riesgo_nacional_pct"], 37.5)
+        self.assertEqual(response.context["riesgo_nacional_nivel"], Alerta.NivelRiesgo.MEDIO)
+
+class AsistenciaFormDefaultTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Default Test", codigo="IE-D01")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor_default@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="60606060",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+
+    def test_estado_por_defecto_es_presente(self):
+        form = AsistenciaForm(usuario_actual=self.profesor)
+
+        self.assertEqual(form.fields["estado"].initial, Asistencia.Estado.PRESENTE)

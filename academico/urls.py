@@ -5,6 +5,7 @@ from . import views
 app_name = "academico"
 
 urlpatterns = [
+    path("inscripciones/crear/", views.inscripcion_crear, name="inscripcion_crear"),
     path("alumnos/", views.AlumnoListView.as_view(), name="alumno_lista"),
     path("alumnos/crear/", views.AlumnoCreateView.as_view(), name="alumno_crear"),
     path("alumnos/<int:pk>/editar/", views.AlumnoUpdateView.as_view(), name="alumno_editar"),
@@ -28,4 +29,10 @@ urlpatterns = [
     path("notas/<int:pk>/editar/", views.NotaUpdateView.as_view(), name="nota_editar"),
     path("alertas/", views.AlertaListView.as_view(), name="alerta_lista"),
     path("alertas/<int:pk>/cerrar/", views.alerta_cerrar, name="alerta_cerrar"),
+    path("reportes/director/", views.reporte_director, name="reporte_director"),
+    path("reportes/minedu/", views.reporte_minedu, name="reporte_minedu"),
+    path("portal/", views.portal_apoderado, name="portal_apoderado"),
+    path("portal/<int:alumno_id>/", views.portal_apoderado_resumen, name="portal_apoderado_resumen"),
+    path("portal/<int:alumno_id>/notas/", views.portal_apoderado_notas, name="portal_apoderado_notas"),
+    path("portal/<int:alumno_id>/asistencia/", views.portal_apoderado_asistencia, name="portal_apoderado_asistencia"),
 ]

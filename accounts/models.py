@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField("correo electronico", unique=True)
     dni = models.CharField("DNI", max_length=8, unique=True)
-    celular = models.CharField(max_length=9, blank=True)
+    celular = models.CharField(max_length=9)
     rol = models.CharField(max_length=30, choices=Rol.choices, blank=True)
     institucion = models.ForeignKey(
         "academico.Institucion",

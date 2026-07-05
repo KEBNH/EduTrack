@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Portal del Apoderado</h4>
+    </div>
+</div>
+
+{% if hijos %}
+<div class="row row-cols-1 row-cols-md-3 g-3">
+    {% for hijo in hijos %}
+    <div class="col">
+        <a href="{% url 'academico:portal_apoderado_resumen' hijo.pk %}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar-md mx-auto mb-2">
+                        <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-24">
+                            {{ hijo.nombres|first }}{{ hijo.apellidos|first }}
+                        </span>
+                    </div>
+                    <h5 class="mb-1">{{ hijo.apellidos }}, {{ hijo.nombres }}</h5>
+                    <p class="text-muted small mb-0">DNI {{ hijo.dni }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted mb-0">No tienes alumnos asociados a tu cuenta.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

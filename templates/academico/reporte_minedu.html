@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Reporte nacional — Distribución de riesgo por institución</h4>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-5 g-3 mb-3">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total alumnos</p>
+                <h3 class="mb-0">{{ total_alumnos }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Bajo riesgo</p>
+                <h3 class="mb-0 text-success">{{ total_bajo }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo medio</p>
+                <h3 class="mb-0 text-warning">{{ total_medio }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo alto</p>
+                <h3 class="mb-0 text-danger">{{ total_alto }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo nacional</p>
+                {% if riesgo_nacional_nivel == "ALTO" %}
+                <h3 class="mb-0 text-danger">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% elif riesgo_nacional_nivel == "MEDIO" %}
+                <h3 class="mb-0 text-warning">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% else %}
+                <h3 class="mb-0 text-success">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h4 class="card-title mb-0">Distribución por institución</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover text-nowrap mb-0">
+            <thead class="bg-light-subtle">
+                <tr>
+                    <th>Institución</th>
+                    <th>Bajo</th>
+                    <th>Medio</th>
+                    <th>Alto</th>
+                    <th>Total</th>
+                    <th>Riesgo final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in filas %}
+                <tr>
+                    <td>{{ fila.institucion.nombre }}</td>
+                    <td><span class="badge bg-success-subtle text-success">{{ fila.bajo_pct|floatformat:1 }}%</span></td>
+                    <td><span class="badge bg-warning-subtle text-warning">{{ fila.medio_pct|floatformat:1 }}%</span></td>
+                    <td><span class="badge bg-danger-subtle text-danger">{{ fila.alto_pct|floatformat:1 }}%</span></td>
+                    <td>{{ fila.total }}</td>
+                    <td>
+                        {% if fila.riesgo_final_nivel == "ALTO" %}
+                        <span class="badge bg-danger-subtle text-danger">{{ fila.riesgo_final_pct|floatformat:1 }}% - Alto</span>
+                        {% elif fila.riesgo_final_nivel == "MEDIO" %}
+                        <span class="badge bg-warning-subtle text-warning">{{ fila.riesgo_final_pct|floatformat:1 }}% - Medio</span>
+                        {% else %}
+                        <span class="badge bg-success-subtle text-success">{{ fila.riesgo_final_pct|floatformat:1 }}% - Bajo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No hay instituciones activas registradas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

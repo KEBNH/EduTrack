@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="page-title-head d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <h4 class="fs-17 mb-0">Asistencia — {{ alumno.apellidos }}, {{ alumno.nombres }}</h4>
+    </div>
+    <a href="{% url 'academico:portal_apoderado_resumen' alumno.pk %}?anio={{ anio }}&bimestre={{ bimestre }}" class="btn btn-light btn-sm">Volver al resumen</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-1">Año</label>
+                <select name="anio" class="form-select" onchange="this.form.submit()">
+                    {% for a in anios %}
+                    <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-1">Bimestre</label>
+                <select name="bimestre" class="form-select" onchange="this.form.submit()">
+                    {% for b in bimestres %}
+                    <option value="{{ b }}" {% if b == bimestre %}selected{% endif %}>Bimestre {{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-3 d-flex gap-3 small">
+    <span><span class="badge bg-success-subtle text-success">&nbsp;</span> Asistió</span>
+    <span><span class="badge bg-danger-subtle text-danger">&nbsp;</span> Faltó</span>
+    <span><span class="badge bg-light text-muted">&nbsp;</span> Sin clases / fin de semana</span>
+</div>
+
+{% if meses %}
+<div class="row row-cols-1 row-cols-md-2 g-3">
+    {% for mes in meses %}
+    <div class="col">
+        <div class="card">
+            <div class="card-header border-bottom">
+                <h5 class="card-title mb-0">{{ mes.nombre }} {{ mes.anio }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered text-center mb-0">
+                    <thead>
+                        <tr>
+                            <th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for semana in mes.semanas %}
+                        <tr>
+                            {% for celda in semana %}
+                            {% if celda == None %}
+                            <td></td>
+                            {% elif celda.fuera_de_rango or celda.fin_de_semana %}
+                            <td class="text-muted bg-light">{{ celda.dia }}</td>
+                            {% elif celda.estado == "FALTA" %}
+                            <td class="bg-danger-subtle text-danger fw-semibold">{{ celda.dia }}</td>
+                            {% elif celda.estado == "PRESENTE" %}
+                            <td class="bg-success-subtle text-success fw-semibold">{{ celda.dia }}</td>
+                            {% else %}
+                            <td>{{ celda.dia }}</td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted mb-0">No hay datos de asistencia para este bimestre.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
