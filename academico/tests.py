@@ -1370,6 +1370,21 @@ class InscripcionTests(TestCase):
         self.assertIn("apoderado_usuario", response.context["form"].errors)
         self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
 
+    def test_inscripcion_no_crea_perfil_si_apoderado_no_tiene_celular(self):
+        self.apoderado_usuario.celular = ""
+        self.apoderado_usuario.save(update_fields=("celular", "fmodificacion"))
+        self.client.force_login(self.personal)
+
+        response = self.client.post(
+            reverse("academico:inscripcion_crear"),
+            self.datos_inscripcion(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("__all__", response.context["form"].errors)
+        self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
+        self.assertFalse(hasattr(self.apoderado_usuario, "perfil_apoderado"))
+
     def test_menu_personal_muestra_inscripciones_y_oculta_altas_separadas(self):
         self.client.force_login(self.personal)
 

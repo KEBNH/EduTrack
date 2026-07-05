@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Avg
 
 from accounts.models import CustomUser
+from accounts.validators import validar_celular_obligatorio
 
 from .models import (
     Alerta,
@@ -114,6 +115,7 @@ def _validar_usuario_apoderado(usuario, institucion):
         )
     if not usuario.is_active:
         raise ValidationError("El usuario seleccionado esta inactivo.")
+    validar_celular_obligatorio(usuario.celular)
 
 
 def _datos_perfil_apoderado(usuario):

@@ -3,6 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
 
 from .models import CustomUser
 from .services import roles_permitidos_para
+from .validators import (
+    normalizar_email_obligatorio,
+    normalizar_texto_obligatorio,
+    validar_celular_obligatorio,
+    validar_dni_obligatorio,
+    validar_rol_obligatorio,
+)
 
 
 class EmailAuthenticationForm(AuthenticationForm):
@@ -43,11 +50,31 @@ class UsuarioBaseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field_name in ("dni", "first_name", "last_name", "celular", "email"):
+            self.fields[field_name].required = True
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
+    def clean_dni(self):
+        return validar_dni_obligatorio(self.cleaned_data["dni"])
+
+    def clean_first_name(self):
+        return normalizar_texto_obligatorio(
+            self.cleaned_data["first_name"],
+            "El nombre",
+        )
+
+    def clean_last_name(self):
+        return normalizar_texto_obligatorio(
+            self.cleaned_data["last_name"],
+            "Los apellidos",
+        )
+
+    def clean_celular(self):
+        return validar_celular_obligatorio(self.cleaned_data["celular"])
+
     def clean_email(self):
-        return self.cleaned_data["email"].lower().strip()
+        return normalizar_email_obligatorio(self.cleaned_data["email"])
 
 
 class CustomUserCreationForm(UsuarioBaseForm):
@@ -56,10 +83,21 @@ class CustomUserCreationForm(UsuarioBaseForm):
 
     def __init__(self, *args, usuario_actual=None, **kwargs):
         super().__init__(*args, **kwargs)
-        permitidos = roles_permitidos_para(usuario_actual) if usuario_actual else set()
+        self.roles_permitidos = (
+            roles_permitidos_para(usuario_actual) if usuario_actual else set()
+        )
         self.fields["rol"].choices = [
-            choice for choice in CustomUser.Rol.choices if choice[0] in permitidos
+            choice
+            for choice in CustomUser.Rol.choices
+            if choice[0] in self.roles_permitidos
         ]
+        self.fields["rol"].required = True
+
+    def clean_rol(self):
+        return validar_rol_obligatorio(
+            self.cleaned_data["rol"],
+            self.roles_permitidos,
+        )
 
 
 class CustomUserUpdateForm(UsuarioBaseForm):

@@ -3,12 +3,13 @@ import re
 from django.conf import settings
 from django.core import mail
 from django.core.cache import cache
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from academico.models import Institucion
 
+from .forms import CustomUserUpdateForm
 from .models import CustomUser
 from .services import (
     crear_usuario,
@@ -174,6 +175,72 @@ class FlujoActivacionTests(TestCase):
         self.assertNotContains(response, f"<td>{usuario.codigo_unico}</td>", html=True)
 
 
+    def test_no_crea_usuario_sin_celular(self):
+        response = self.client.post(
+            reverse("accounts:usuario_crear"),
+            {
+                "dni": "87654321",
+                "first_name": "Maria",
+                "last_name": "Perez",
+                "email": "maria@edutrack.test",
+                "rol": CustomUser.Rol.MINEDU,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+            response.context["form"],
+            "celular",
+            "Este campo es obligatorio.",
+        )
+        self.assertFalse(
+            CustomUser.objects.filter(email="maria@edutrack.test").exists()
+        )
+
+    def test_no_crea_usuario_con_dni_o_celular_invalidos(self):
+        response = self.client.post(
+            reverse("accounts:usuario_crear"),
+            {
+                "dni": "8765432A",
+                "first_name": "Maria",
+                "last_name": "Perez",
+                "celular": "98765",
+                "email": "maria@edutrack.test",
+                "rol": CustomUser.Rol.MINEDU,
+            },
+        )
+
+        self.assertFormError(
+            response.context["form"],
+            "dni",
+            "El DNI debe contener exactamente 8 digitos.",
+        )
+        self.assertFormError(
+            response.context["form"],
+            "celular",
+            "El celular debe contener exactamente 9 digitos.",
+        )
+
+    def test_edicion_valida_dni_celular_y_nombres_obligatorios(self):
+        usuario = self.crear_usuario_pendiente()
+        form = CustomUserUpdateForm(
+            {
+                "dni": "123",
+                "first_name": "",
+                "last_name": "   ",
+                "celular": "abc",
+                "email": "usuario-editado@edutrack.test",
+            },
+            instance=usuario,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("dni", form.errors)
+        self.assertIn("first_name", form.errors)
+        self.assertIn("last_name", form.errors)
+        self.assertIn("celular", form.errors)
+
+
 class PermisosCreacionUsuariosTests(TestCase):
     def setUp(self):
         self.institucion = Institucion.objects.create(
@@ -234,6 +301,25 @@ class PermisosCreacionUsuariosTests(TestCase):
         self.assertEqual(usuario.institucion, self.institucion)
         self.assertEqual(usuario.created_by, self.personal)
         self.assertFalse(usuario.has_usable_password())
+
+    def test_servicio_rechaza_usuario_sin_celular(self):
+        datos = self.datos_apoderado()
+        datos["celular"] = ""
+
+        with self.assertRaises(ValidationError) as contexto:
+            crear_usuario(usuario_actual=self.personal, datos=datos)
+
+        self.assertIn("celular", contexto.exception.message_dict)
+
+    def test_servicio_rechaza_dni_y_celular_invalidos(self):
+        datos = self.datos_apoderado(dni="ABC")
+        datos["celular"] = "98765"
+
+        with self.assertRaises(ValidationError) as contexto:
+            crear_usuario(usuario_actual=self.personal, datos=datos)
+
+        self.assertIn("dni", contexto.exception.message_dict)
+        self.assertIn("celular", contexto.exception.message_dict)
 
     def test_profesor_no_puede_crear_apoderado(self):
         self.assertFalse(
