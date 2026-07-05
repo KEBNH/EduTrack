@@ -353,11 +353,10 @@ def calcular_riesgo_rendimiento(alumno, fecha=None):
     ]
 
     if not promedios:
-        promedio_general = Decimal("20")
-        cursos_evaluados = 0
-    else:
-        promedio_general = sum(promedios, Decimal("0")) / Decimal(len(promedios))
-        cursos_evaluados = len(promedios)
+        return None
+
+    promedio_general = sum(promedios, Decimal("0")) / Decimal(len(promedios))
+    cursos_evaluados = len(promedios)
 
     nivel = clasificar_riesgo_rendimiento(promedio_general)
     descripcion = (

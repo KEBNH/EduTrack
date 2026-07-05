@@ -35,7 +35,7 @@ from .services import (
 )
 
 ROL_PERSONAL = {CustomUser.Rol.PERSONAL_ACADEMICO}
-ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR, CustomUser.Rol.PERSONAL_ACADEMICO}
+ROLES_REGISTRO_ACADEMICO = {CustomUser.Rol.PROFESOR}
 ROLES_LECTURA_ACADEMICA = {
     CustomUser.Rol.DIRECTOR,
     CustomUser.Rol.PROFESOR,
@@ -133,7 +133,16 @@ class ListaInstitucionalMixin(PermisoRolMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"titulo": self.titulo, "url_crear": self.url_crear})
+        context.update(
+            {
+                "titulo": self.titulo,
+                "url_crear": self.url_crear,
+                "puede_crear": (
+                    bool(self.url_crear)
+                    and self.request.user.rol == CustomUser.Rol.PERSONAL_ACADEMICO
+                ),
+            }
+        )
         return context
 
 
@@ -447,6 +456,11 @@ class AsistenciaListView(ListaInstitucionalMixin, ListView):
             )
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["puede_crear"] = self.request.user.rol == CustomUser.Rol.PROFESOR
+        return context
+
 
 class AsistenciaCreateView(FormularioInstitucionalMixin, CreateView):
     model = Asistencia
@@ -482,6 +496,11 @@ class NotaListView(ListaInstitucionalMixin, ListView):
         if self.request.user.rol == CustomUser.Rol.PROFESOR:
             queryset = queryset.filter(matricula_curso__curso__profesor=self.request.user)
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["puede_crear"] = self.request.user.rol == CustomUser.Rol.PROFESOR
+        return context
 
 
 class NotaCreateView(FormularioInstitucionalMixin, CreateView):

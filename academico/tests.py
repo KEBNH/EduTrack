@@ -308,6 +308,13 @@ class FlujoMatriculaCursoTests(TestCase):
             rol=CustomUser.Rol.PROFESOR,
             institucion=self.institucion,
         )
+        self.director = CustomUser.objects.create_user(
+            email="director-matriculas@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="50234568",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
         self.alumno = Alumno.objects.create(
             institucion=self.institucion,
             dni="50345678",
@@ -576,6 +583,79 @@ class FlujoMatriculaCursoTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("calificacion", form.errors)
 
+    def test_solo_profesor_puede_crear_y_editar_asistencias_y_notas(self):
+        matricula = Matricula.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumno,
+            grado=self.grado,
+        )
+        matricula_curso = MatriculaCurso.objects.create(
+            institucion=self.institucion,
+            matricula=matricula,
+            curso=self.curso_activo,
+        )
+        asistencia = Asistencia.objects.create(
+            institucion=self.institucion,
+            matricula_curso=matricula_curso,
+            fecha=date(2026, 6, 9),
+            estado=Asistencia.Estado.PRESENTE,
+        )
+        nota = Nota.objects.create(
+            institucion=self.institucion,
+            matricula_curso=matricula_curso,
+            periodo=Nota.Periodo.SEGUNDO,
+            evaluacion="Practica 1",
+            calificacion="18.00",
+        )
+
+        for usuario in (self.personal, self.director):
+            self.client.force_login(usuario)
+            asistencia_lista = self.client.get(reverse("academico:asistencia_lista"))
+            nota_lista = self.client.get(reverse("academico:nota_lista"))
+
+            self.assertEqual(asistencia_lista.status_code, 200)
+            self.assertEqual(nota_lista.status_code, 200)
+            self.assertNotContains(asistencia_lista, "Nuevo registro")
+            self.assertNotContains(nota_lista, "Nuevo registro")
+            self.assertEqual(
+                self.client.get(reverse("academico:asistencia_crear")).status_code,
+                403,
+            )
+            self.assertEqual(
+                self.client.get(
+                    reverse("academico:asistencia_editar", args=[asistencia.pk])
+                ).status_code,
+                403,
+            )
+            self.assertEqual(
+                self.client.get(reverse("academico:nota_crear")).status_code,
+                403,
+            )
+            self.assertEqual(
+                self.client.get(
+                    reverse("academico:nota_editar", args=[nota.pk])
+                ).status_code,
+                403,
+            )
+
+        self.client.force_login(self.profesor)
+        self.assertContains(
+            self.client.get(reverse("academico:asistencia_lista")),
+            "Nuevo registro",
+        )
+        self.assertContains(
+            self.client.get(reverse("academico:nota_lista")),
+            "Nuevo registro",
+        )
+        self.assertEqual(
+            self.client.get(reverse("academico:asistencia_crear")).status_code,
+            200,
+        )
+        self.assertEqual(
+            self.client.get(reverse("academico:nota_crear")).status_code,
+            200,
+        )
+
 
 class FlujoAlumnosTests(TestCase):
     def setUp(self):
@@ -658,8 +738,8 @@ class FlujoAlumnosTests(TestCase):
             },
         )
 
-        self.assertContains(response, "El DNI debe contener exactamente 8 digitos.")
-        self.assertContains(response, "La fecha de nacimiento no puede ser futura.")
+        self.assertContains(response, "Ingrese un DNI valido.")
+        self.assertContains(response, "Ingrese una fecha de nacimiento valida.")
 
         response = self.client.post(
             url,
@@ -674,6 +754,57 @@ class FlujoAlumnosTests(TestCase):
 
         self.assertContains(
             response, "Ya existe un alumno con este DNI en la institucion."
+        )
+
+    def test_formulario_rechaza_nombres_con_numeros_y_edad_irrealista(self):
+        self.client.force_login(self.personal)
+        url = reverse("academico:alumno_crear")
+
+        response = self.client.post(
+            url,
+            {
+                "dni": "70678902",
+                "nombres": "Ana2",
+                "apellidos": "Ramos",
+                "fecha_nacimiento": "2013-02-15",
+                "activo": True,
+            },
+        )
+
+        self.assertContains(response, "Este campo no debe contener numeros.")
+
+        fecha_menor = date.today().replace(year=date.today().year - 5)
+        response = self.client.post(
+            url,
+            {
+                "dni": "70678903",
+                "nombres": "Ana",
+                "apellidos": "Ramos",
+                "fecha_nacimiento": fecha_menor.isoformat(),
+                "activo": True,
+            },
+        )
+
+        self.assertContains(
+            response,
+            "Ingrese una fecha de nacimiento valida.",
+        )
+
+        fecha_mayor = date.today().replace(year=date.today().year - 23)
+        response = self.client.post(
+            url,
+            {
+                "dni": "70678904",
+                "nombres": "Ana",
+                "apellidos": "Ramos",
+                "fecha_nacimiento": fecha_mayor.isoformat(),
+                "activo": True,
+            },
+        )
+
+        self.assertContains(
+            response,
+            "Ingrese una fecha de nacimiento valida.",
         )
 
     def test_lista_solo_muestra_alumnos_de_la_institucion(self):
@@ -818,37 +949,22 @@ class FlujoGradosTests(TestCase):
                 "nivel": Grado.Nivel.PRIMARIA,
                 "nombre": "  Tercer   grado ",
                 "seccion": " Unica ",
-                "anio_academico": 2027,
                 "activo": True,
             },
             follow=True,
         )
 
         self.assertRedirects(response, reverse("academico:grado_lista"))
-        grado = Grado.objects.get(anio_academico=2027)
+        grado = Grado.objects.get(nombre="Tercer grado")
         self.assertEqual(grado.institucion, self.institucion)
+        self.assertEqual(grado.anio_academico, date.today().year)
         self.assertEqual(grado.nombre, "Tercer grado")
         self.assertEqual(grado.seccion, "Unica")
         self.assertContains(response, "Grado registrado correctamente.")
 
-    def test_formulario_rechaza_anio_invalido_y_grado_duplicado(self):
+    def test_formulario_rechaza_grado_duplicado_en_anio_automatico(self):
         self.client.force_login(self.personal)
         url = reverse("academico:grado_crear")
-
-        response = self.client.post(
-            url,
-            {
-                "nivel": Grado.Nivel.PRIMARIA,
-                "nombre": "Primero",
-                "seccion": "A",
-                "anio_academico": 999,
-                "activo": True,
-            },
-        )
-
-        self.assertContains(
-            response, "El anio academico debe contener exactamente cuatro digitos."
-        )
 
         response = self.client.post(
             url,
@@ -856,7 +972,6 @@ class FlujoGradosTests(TestCase):
                 "nivel": self.grado.nivel,
                 "nombre": self.grado.nombre,
                 "seccion": self.grado.seccion,
-                "anio_academico": self.grado.anio_academico,
                 "activo": True,
             },
         )
@@ -949,7 +1064,6 @@ class FlujoGradosTests(TestCase):
                 "nivel": self.grado.nivel,
                 "nombre": self.grado.nombre,
                 "seccion": self.grado.seccion,
-                "anio_academico": self.grado.anio_academico,
                 "activo": False,
             },
             follow=True,
@@ -1385,6 +1499,24 @@ class InscripcionTests(TestCase):
         self.assertFalse(Alumno.objects.filter(dni="90567890").exists())
         self.assertFalse(hasattr(self.apoderado_usuario, "perfil_apoderado"))
 
+    def test_inscripcion_rechaza_nombre_con_numeros_y_edad_irrealista(self):
+        self.client.force_login(self.personal)
+        datos = self.datos_inscripcion(alumno_nombres="Ana2")
+
+        response = self.client.post(reverse("academico:inscripcion_crear"), datos)
+
+        self.assertIn("alumno_nombres", response.context["form"].errors)
+
+        datos = self.datos_inscripcion(alumno_dni="90567891")
+        datos["alumno_fecha_nacimiento"] = date.today().replace(
+            year=date.today().year - 5
+        ).isoformat()
+
+        response = self.client.post(reverse("academico:inscripcion_crear"), datos)
+
+        self.assertIn("alumno_fecha_nacimiento", response.context["form"].errors)
+        self.assertFalse(Alumno.objects.filter(dni="90567891").exists())
+
     def test_menu_personal_muestra_inscripciones_y_oculta_altas_separadas(self):
         self.client.force_login(self.personal)
 
@@ -1504,6 +1636,20 @@ class MotorSATTests(TestCase):
         alerta = Alerta.objects.get(alumno=self.alumno, tipo=Alerta.Tipo.RENDIMIENTO)
         self.assertTrue(alerta.activa)
         self.assertEqual(alerta.nivel_riesgo, Alerta.NivelRiesgo.ALTO)
+
+    def test_sin_notas_no_calcula_promedio_ni_genera_alerta_de_rendimiento(self):
+        from .services import calcular_riesgo_rendimiento, generar_alertas_sat
+
+        resultado = calcular_riesgo_rendimiento(self.alumno, fecha=date(2026, 6, 30))
+        generar_alertas_sat(fecha=date(2026, 6, 30))
+
+        self.assertIsNone(resultado)
+        self.assertFalse(
+            Alerta.objects.filter(
+                alumno=self.alumno,
+                tipo=Alerta.Tipo.RENDIMIENTO,
+            ).exists()
+        )
 
     def test_promedio_14_genera_alerta_media(self):
         from .services import generar_alertas_sat
