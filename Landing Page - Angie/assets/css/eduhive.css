@@ -16433,3 +16433,82 @@ body.boxed-wrapper .main-footer__shape-five {
     gap: 15px;
 }
 
+.funfact-one__grid {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.funfact-one__item {
+    max-width: 350px;
+}
+.funfact-one__item{
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.funfact-one__icon{
+    width: 110px;
+    height: 110px;
+    min-width: 110px;
+    min-height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.funfact-one__icon__inner{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===========================
+   SECCIÓN DE ESTADÍSTICAS
+   =========================== */
+
+.funfact-one {
+    background-color: #EEF7FF !important;
+    padding: 120px 0 !important;
+    margin: 0 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.funfact-one--round {
+    background-color: #EEF7FF !important;
+}
+
+.funfact-one .container {
+    background: transparent !important;
+}
+
+.funfact-one__grid {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.funfact-one__item {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.funfact-one__icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
