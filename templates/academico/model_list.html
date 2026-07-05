@@ -4,7 +4,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h4>{{ titulo }}</h4>
-        {% if request.user.rol == "PERSONAL_ACADEMICO" or titulo == "Asistencias" or titulo == "Notas" %}
+        {% if puede_crear %}
         <a class="btn btn-success" href="{% url url_crear %}">Nuevo registro</a>
         {% endif %}
     </div>

@@ -17,6 +17,40 @@ from .models import (
 )
 
 
+EDAD_MINIMA_ALUMNO = 6
+EDAD_MAXIMA_ALUMNO = 22
+MENSAJE_DNI_INVALIDO = "Ingrese un DNI valido."
+MENSAJE_FECHA_NACIMIENTO_INVALIDA = "Ingrese una fecha de nacimiento valida."
+
+
+def normalizar_nombre_persona(valor):
+    texto = " ".join(valor.split())
+    if any(caracter.isdigit() for caracter in texto):
+        raise forms.ValidationError("Este campo no debe contener numeros.")
+    return texto
+
+
+def calcular_edad(fecha_nacimiento, fecha_referencia=None):
+    fecha_referencia = fecha_referencia or date.today()
+    edad = fecha_referencia.year - fecha_nacimiento.year
+    if (fecha_referencia.month, fecha_referencia.day) < (
+        fecha_nacimiento.month,
+        fecha_nacimiento.day,
+    ):
+        edad -= 1
+    return edad
+
+
+def validar_fecha_nacimiento_alumno(fecha_nacimiento):
+    if fecha_nacimiento > date.today():
+        raise forms.ValidationError(MENSAJE_FECHA_NACIMIENTO_INVALIDA)
+
+    edad = calcular_edad(fecha_nacimiento)
+    if edad < EDAD_MINIMA_ALUMNO or edad > EDAD_MAXIMA_ALUMNO:
+        raise forms.ValidationError(MENSAJE_FECHA_NACIMIENTO_INVALIDA)
+    return fecha_nacimiento
+
+
 class FormularioInstitucional(forms.ModelForm):
     def __init__(self, *args, usuario_actual=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,7 +66,10 @@ class AlumnoForm(FormularioInstitucional):
         model = Alumno
         fields = ("dni", "nombres", "apellidos", "fecha_nacimiento", "activo")
         labels = {"fecha_nacimiento": "Fecha de nacimiento"}
-        help_texts = {"dni": "Ingrese exactamente 8 digitos."}
+        help_texts = {
+            "dni": "Ingrese 8 digitos.",
+            "fecha_nacimiento": "Edad permitida: 6 a 22 anios.",
+        }
         widgets = {
             "dni": forms.TextInput(
                 attrs={"inputmode": "numeric", "maxlength": "8", "autocomplete": "off"}
@@ -44,7 +81,7 @@ class AlumnoForm(FormularioInstitucional):
     def clean_dni(self):
         dni = self.cleaned_data["dni"].strip()
         if not dni.isdigit() or len(dni) != 8:
-            raise forms.ValidationError("El DNI debe contener exactamente 8 digitos.")
+            raise forms.ValidationError(MENSAJE_DNI_INVALIDO)
         if self.instance.institucion_id and Alumno.objects.filter(
             institucion_id=self.instance.institucion_id, dni=dni
         ).exclude(pk=self.instance.pk).exists():
@@ -54,16 +91,13 @@ class AlumnoForm(FormularioInstitucional):
         return dni
 
     def clean_nombres(self):
-        return " ".join(self.cleaned_data["nombres"].split())
+        return normalizar_nombre_persona(self.cleaned_data["nombres"])
 
     def clean_apellidos(self):
-        return " ".join(self.cleaned_data["apellidos"].split())
+        return normalizar_nombre_persona(self.cleaned_data["apellidos"])
 
     def clean_fecha_nacimiento(self):
-        fecha_nacimiento = self.cleaned_data["fecha_nacimiento"]
-        if fecha_nacimiento > date.today():
-            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
-        return fecha_nacimiento
+        return validar_fecha_nacimiento_alumno(self.cleaned_data["fecha_nacimiento"])
 
 
 class ApoderadoForm(FormularioInstitucional):
@@ -100,6 +134,12 @@ class ApoderadoForm(FormularioInstitucional):
             )
         return alumnos
 
+    def clean_nombres(self):
+        return normalizar_nombre_persona(self.cleaned_data["nombres"])
+
+    def clean_apellidos(self):
+        return normalizar_nombre_persona(self.cleaned_data["apellidos"])
+
 
 class InscripcionForm(forms.Form):
     apoderado_usuario = forms.ModelChoiceField(
@@ -114,6 +154,7 @@ class InscripcionForm(forms.Form):
     alumno_dni = forms.CharField(
         label="DNI del alumno",
         max_length=8,
+        help_text="Ingrese 8 digitos.",
         widget=forms.TextInput(
             attrs={"inputmode": "numeric", "maxlength": "8", "autocomplete": "off"}
         ),
@@ -122,6 +163,7 @@ class InscripcionForm(forms.Form):
     alumno_apellidos = forms.CharField(label="Apellidos del alumno", max_length=150)
     alumno_fecha_nacimiento = forms.DateField(
         label="Fecha de nacimiento del alumno",
+        help_text="Edad permitida: 6 a 22 anios.",
         widget=forms.DateInput(attrs={"type": "date"}),
     )
     grado = forms.ModelChoiceField(label="Grado", queryset=Grado.objects.none())
@@ -144,7 +186,7 @@ class InscripcionForm(forms.Form):
     def _validar_dni(self, campo):
         dni = self.cleaned_data[campo].strip()
         if not dni.isdigit() or len(dni) != 8:
-            raise forms.ValidationError("El DNI debe contener exactamente 8 digitos.")
+            raise forms.ValidationError(MENSAJE_DNI_INVALIDO)
         return dni
 
     def _validar_celular(self, campo):
@@ -162,31 +204,29 @@ class InscripcionForm(forms.Form):
         return self._validar_dni("alumno_dni")
 
     def clean_alumno_nombres(self):
-        return " ".join(self.cleaned_data["alumno_nombres"].split())
+        return normalizar_nombre_persona(self.cleaned_data["alumno_nombres"])
 
     def clean_alumno_apellidos(self):
-        return " ".join(self.cleaned_data["alumno_apellidos"].split())
+        return normalizar_nombre_persona(self.cleaned_data["alumno_apellidos"])
 
     def clean_alumno_fecha_nacimiento(self):
-        fecha_nacimiento = self.cleaned_data["alumno_fecha_nacimiento"]
-        if fecha_nacimiento > date.today():
-            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
-        return fecha_nacimiento
+        return validar_fecha_nacimiento_alumno(
+            self.cleaned_data["alumno_fecha_nacimiento"]
+        )
 
 
 class GradoForm(FormularioInstitucional):
     class Meta:
         model = Grado
-        fields = ("nivel", "nombre", "seccion", "anio_academico", "tutor", "activo")
-        labels = {"anio_academico": "Anio academico"}
-        help_texts = {"anio_academico": "Ingrese un anio de cuatro digitos."}
+        fields = ("nivel", "nombre", "seccion", "tutor", "activo")
         widgets = {
-            "anio_academico": forms.NumberInput(attrs={"min": "1000", "max": "9999"}),
             "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.instance.anio_academico = date.today().year
         institucion = getattr(self.usuario_actual, "institucion", None)
         tutores = CustomUser.objects.filter(
             institucion=institucion, rol=CustomUser.Rol.PROFESOR, is_active=True
@@ -208,24 +248,16 @@ class GradoForm(FormularioInstitucional):
     def clean_seccion(self):
         return " ".join(self.cleaned_data["seccion"].split())
 
-    def clean_anio_academico(self):
-        anio_academico = self.cleaned_data["anio_academico"]
-        if anio_academico < 1000 or anio_academico > 9999:
-            raise forms.ValidationError(
-                "El anio academico debe contener exactamente cuatro digitos."
-            )
-        return anio_academico
-
     def clean(self):
         cleaned_data = super().clean()
-        campos = ("nivel", "nombre", "seccion", "anio_academico")
+        campos = ("nivel", "nombre", "seccion")
         if all(cleaned_data.get(campo) not in (None, "") for campo in campos):
             duplicado = Grado.objects.filter(
                 institucion_id=self.instance.institucion_id,
                 nivel=cleaned_data["nivel"],
                 nombre=cleaned_data["nombre"],
                 seccion=cleaned_data["seccion"],
-                anio_academico=cleaned_data["anio_academico"],
+                anio_academico=self.instance.anio_academico,
             ).exclude(pk=self.instance.pk)
             if duplicado.exists():
                 raise forms.ValidationError(

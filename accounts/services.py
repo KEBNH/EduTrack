@@ -55,7 +55,7 @@ CAPACIDADES_POR_ROL = {
     CustomUser.Rol.PERSONAL_ACADEMICO: [
         "Registrar inscripciones con apoderado, alumno y matricula.",
         "Gestionar grados, cursos y matriculas.",
-        "Registrar y actualizar asistencias y notas.",
+        "Consultar asistencias y notas registradas.",
     ],
     CustomUser.Rol.APODERADO: [
         "Consultar alertas activas asociadas a sus hijos.",
