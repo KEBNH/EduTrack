@@ -2155,3 +2155,26 @@ class ReporteMineduTests(TestCase):
         # riesgo_nacional = (1*1 + 1*2) / (4*2) * 100 = 37.5
         self.assertAlmostEqual(response.context["riesgo_nacional_pct"], 37.5)
         self.assertEqual(response.context["riesgo_nacional_nivel"], Alerta.NivelRiesgo.MEDIO)
+
+class AsistenciaFormDefaultTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Default Test", codigo="IE-D01")
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+        self.profesor = CustomUser.objects.create_user(
+            email="profesor_default@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="60606060",
+            rol=CustomUser.Rol.PROFESOR,
+            institucion=self.institucion,
+        )
+
+    def test_estado_por_defecto_es_presente(self):
+        form = AsistenciaForm(usuario_actual=self.profesor)
+
+        self.assertEqual(form.fields["estado"].initial, Asistencia.Estado.PRESENTE)
