@@ -135,7 +135,7 @@
                     <li class="side-nav-title mt-2">Reportes</li>
                     {% endif %}
 
-                    {% if request.user.rol == "DIRECTOR" %}
+                    {% if request.user.rol == "DIRECTOR" or request.user.rol == "MINEDU" %}
                     <li class="side-nav-item">
                         <a href="{% url 'academico:reporte_director' %}" class="side-nav-link">
                             <span class="menu-icon"><i class="ti ti-report"></i></span>

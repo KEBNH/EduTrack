@@ -4,6 +4,20 @@
 <div class="page-title-head d-flex align-items-center gap-2">
     <div class="flex-grow-1">
         <h4 class="fs-17 mb-0">Reporte institucional — Distribución de riesgo</h4>
+        {% if instituciones_disponibles %}
+        <form method="get" class="mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label mb-1">Institución</label>
+                    <select name="institucion" class="form-select" onchange="this.form.submit()">
+                        {% for inst in instituciones_disponibles %}
+                        <option value="{{ inst.pk }}" {% if institucion and inst.pk == institucion.pk %}selected{% endif %}>{{ inst.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+        {% endif %}
     </div>
 </div>
 

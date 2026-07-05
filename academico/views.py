@@ -594,14 +594,42 @@ NIVEL_RIESGO_ORDEN = {
 
 @login_required
 def reporte_director(request):
-    if (
-        not request.user.is_active
-        or request.user.rol != CustomUser.Rol.DIRECTOR
-        or request.user.institucion_id is None
-    ):
+    if not request.user.is_active:
         raise PermissionDenied("No tiene permiso para ver este reporte.")
 
-    institucion = request.user.institucion
+    instituciones_disponibles = None
+    institucion = None
+
+    if request.user.rol == CustomUser.Rol.DIRECTOR:
+        institucion = request.user.institucion
+    elif request.user.rol == CustomUser.Rol.MINEDU:
+        instituciones_disponibles = Institucion.objects.filter(activo=True).order_by("nombre")
+        institucion_id = request.GET.get("institucion")
+        if institucion_id:
+            institucion = get_object_or_404(
+                Institucion, pk=institucion_id, activo=True
+            )
+        else:
+            institucion = instituciones_disponibles.first()
+    else:
+        raise PermissionDenied("No tiene permiso para ver este reporte.")
+
+    if institucion is None:
+        return render(
+            request,
+            "academico/reporte_director.html",
+            {
+                "instituciones_disponibles": instituciones_disponibles,
+                "institucion": None,
+                "filas": [],
+                "total_alumnos": 0,
+                "total_bajo": 0,
+                "total_medio": 0,
+                "total_alto": 0,
+                "total_seguimiento": 0,
+            },
+        )
+
     grados = Grado.objects.filter(institucion=institucion, activo=True).order_by(
         "nivel", "nombre", "seccion"
     )
@@ -614,7 +642,7 @@ def reporte_director(request):
             nivel_por_alumno[alerta.alumno_id] = alerta.nivel_riesgo
 
     filas = []
-    total_bajo = total_medio = total_alto = total_seguimiento = 0
+    total_bajo = total_medio = total_alto = 0
 
     for grado in grados:
         alumnos_ids = Matricula.objects.filter(
@@ -651,6 +679,8 @@ def reporte_director(request):
         request,
         "academico/reporte_director.html",
         {
+            "instituciones_disponibles": instituciones_disponibles,
+            "institucion": institucion,
             "filas": filas,
             "total_bajo": total_bajo,
             "total_medio": total_medio,

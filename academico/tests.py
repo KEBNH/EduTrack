@@ -1876,6 +1876,22 @@ class ReporteDirectorTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_minedu_puede_elegir_institucion(self):
+        minedu_user = CustomUser.objects.create_user(
+            email="minedu2@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="20202020",
+            rol=CustomUser.Rol.MINEDU,
+        )
+        self.client.force_login(minedu_user)
+
+        response = self.client.get(
+            reverse("academico:reporte_director"), {"institucion": self.institucion.pk}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["institucion"], self.institucion)
+
 class PortalApoderadoTests(TestCase):
     def setUp(self):
         self.institucion = Institucion.objects.create(nombre="IE Test", codigo="IE-T02")
