@@ -1,0 +1,614 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beneficios || EduTrack</title>
+    <!-- favicons Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'landing/assets/images/favicons/apple-touch-icon.png' %}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'landing/assets/images/favicons/favicon-32x32.png' %}" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'landing/assets/images/favicons/favicon-16x16.png' %}" />
+    <link rel="manifest" href="{% static 'landing/assets/images/favicons/site.webmanifest' %}" />
+    <meta name="description" content="Conoce los beneficios de EduTrack: detección temprana de riesgo, alertas automáticas, seguimiento personalizado y mejora del rendimiento académico." />
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/animate/animate.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/fontawesome/css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jarallax/jarallax.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.pips.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/eduhive-icons/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.carousel.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.theme.default.min.css' %}" />
+
+    <!-- template styles -->
+    <link rel="stylesheet" href="{% static 'landing/assets/css/eduhive.css' %}" />
+
+    <!-- estilos propios de la pagina "Beneficios" (usan las variables ya definidas en eduhive.css) -->
+    <style>
+        .benefit-card {
+            height: 100%;
+            padding: 38px 32px;
+            background-color: var(--eduhive-white, #FFFFFF);
+            border: 1px solid var(--eduhive-border-color, #DBD8E6);
+            border-radius: 20px;
+            transition: 400ms ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-6px);
+            border-color: transparent;
+            box-shadow: 0px 10px 60px 0px rgba(var(--eduhive-black-rgb, 32, 16, 75), 0.08);
+        }
+
+        .benefit-card__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            font-size: 26px;
+        }
+
+        .benefit-card:nth-of-type(6n+1) .benefit-card__icon { background-color: rgba(var(--eduhive-base-rgb, 103, 76, 239), 0.1); color: var(--eduhive-base, #674CEF); }
+        .benefit-card:nth-of-type(6n+2) .benefit-card__icon { background-color: rgba(var(--eduhive-pink-rgb, 239, 46, 115), 0.1); color: var(--eduhive-pink, #EF2E73); }
+        .benefit-card:nth-of-type(6n+3) .benefit-card__icon { background-color: rgba(var(--eduhive-secondary-rgb, 57, 212, 214), 0.12); color: #17A5A7; }
+        .benefit-card:nth-of-type(6n+4) .benefit-card__icon { background-color: rgba(var(--eduhive-primary-rgb, 239, 128, 46), 0.12); color: var(--eduhive-primary, #EF802E); }
+        .benefit-card:nth-of-type(6n+5) .benefit-card__icon { background-color: rgba(var(--eduhive-green-rgb, 111, 207, 151), 0.15); color: #2E9A61; }
+        .benefit-card:nth-of-type(6n+6) .benefit-card__icon { background-color: rgba(var(--eduhive-blue-rgb, 67, 201, 255), 0.14); color: #1591C7; }
+
+        .benefit-card__title {
+            margin-bottom: 12px;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--eduhive-black, #20104B);
+        }
+
+        .benefit-card__text {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--eduhive-text, #7B7980);
+        }
+
+        /* ---------- Banner CTA ---------- */
+        .benefits-cta {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 44px 50px;
+            background-color: var(--eduhive-white3, #F7F3FF);
+            border-radius: 20px;
+        }
+
+        .benefits-cta__icon {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background-color: var(--eduhive-base, #674CEF);
+            color: var(--eduhive-white, #FFFFFF);
+            font-size: 26px;
+        }
+
+        .benefits-cta__body {
+            flex: 1 1 380px;
+        }
+
+        .benefits-cta__body h3 {
+            margin-bottom: 8px;
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--eduhive-black, #20104B);
+        }
+
+        .benefits-cta__body p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--eduhive-text, #7B7980);
+        }
+
+        @media (max-width: 767px) {
+            .benefit-card { padding: 30px 24px; }
+            .benefits-cta { padding: 32px; text-align: center; justify-content: center; }
+            .benefits-cta__body { flex-basis: 100%; }
+        }
+    </style>
+</head>
+
+<body class="custom-cursor">
+
+    <div class="custom-cursor__cursor"></div>
+    <div class="custom-cursor__cursor-two"></div>
+
+    <div class="preloader">
+        <div class="preloader__image" style="background-image: url(assets/images/loader.png);"></div>
+    </div>
+    <!-- /.preloader -->
+    <div class="page-wrapper">
+        <div class="topbar">
+            <div class="container-fluid">
+                <div class="topbar__inner">
+                    <ul class="list-unstyled topbar__info">
+                        <li>
+                            <span class="topbar__info__icon topbar__info__icon--email">
+                                <i class="icon-email"></i>
+                            </span>
+                            <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                        </li>
+                        <li>
+                            <span class="topbar__info__icon">
+                                <i class="icon-telephone"></i>
+                            </span>
+                            <a href="tel:+51 4726516">+51 4726516</a>
+                        </li>
+                        <li>
+                            <span class="topbar__info__icon">
+                                <i class="icon-location"></i>
+                            </span>
+                            <a href="https://www.google.com/maps">Av. de la Marina 2810, San Miguel - 15087</a>
+                        </li>
+                    </ul><!-- /.list-unstyled topbar__info -->
+                    <div class="topbar__social social-links">
+                        <a href="https://facebook.com">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                            <span class="sr-only">Facebook</span>
+                        </a>
+                        <a href="https://instagram.com/">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                            <span class="sr-only">Instagram</span>
+                        </a>
+                        <a href="https://linkedin.com">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                            <span class="sr-only">Linkedin</span>
+                        </a>
+                        <a href="https://youtube.com">
+                            <i class="fab fa-youtube" aria-hidden="true"></i>
+                            <span class="sr-only">Youtube</span>
+                        </a>
+                    </div><!-- /.topbar__social social-links -->
+                </div><!-- /.topbar__inner -->
+            </div><!-- /.container-fluid -->
+        </div><!-- /.topbar -->
+
+        <header class="main-header sticky-header sticky-header--normal">
+            <div class="container-fluid">
+                <div class="main-header__inner">
+                    <div class="main-header__logo logo-retina">
+                        <a href="{% url 'landing' %}">
+                            <img src="{% static 'landing/assets/images/logo-Edutrack-remove.png' %}" alt="EduTrack HTML" width="209">
+                        </a>
+                    </div><!-- /.main-header__logo -->
+                    <div class="main-header__right">
+                        <nav class="main-header__nav main-menu">
+                            <ul class="main-menu__list">
+
+                                <li>
+                                    <a href="{% url 'landing' %}">Inicio</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_about' %}">Quienes somos</a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#">Funcionalidades</a>
+                                    <ul>
+                                        <li><a href="{% url 'landing_functionalities' %}">Funcionalidades principales</a></li>
+                                        <li><a href="{% url 'accounts:login' %}">Log In</a></li>
+                                        <li><a href="404.html">404 Error</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_benefits' %}">Beneficios</a>
+                                </li>
+                                <li>
+                                    <a href="products.html">Preguntas Frecuentes</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_contact' %}">Contacto</a>
+                                </li>
+                            </ul>
+                        </nav><!-- /.main-header__nav -->
+                        <div class="mobile-nav__btn mobile-nav__toggler">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div><!-- /.mobile-nav__toggler -->
+                        <a href="#" class="search-toggler main-header__search">
+                            <i class="icon-search" aria-hidden="true"></i>
+                            <span class="sr-only">Search</span>
+                        </a><!-- /.search-toggler -->
+                        <a href="{% url 'landing_contact' %}" class="main-header__btn eduhive-btn eduhive-btn--border">
+                            <span>Ingresar al sistema</span>
+                            <span class="eduhive-btn__icon">
+                                <span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span>
+                            </span>
+                        </a><!-- /.main-header__btn eduhive-btn -->
+                    </div><!-- /.main-header__right -->
+                </div><!-- /.main-header__inner -->
+            </div><!-- /.container-fluid -->
+        </header><!-- /.main-header -->
+
+        <section class="page-header">
+            <div class="container">
+                <div class="page-header__content">
+                    <ul class="eduhive-breadcrumb list-unstyled">
+                        <li><span class="eduhive-breadcrumb__icon"><i class="icon-home"></i></span><a href="{% url 'landing' %}">Home</a></li>
+                        <li><span>Beneficios</span></li>
+                    </ul><!-- /.eduhive-breadcrumb list-unstyled -->
+                    <h2 class="page-header__title">Beneficios de EduTrack</h2>
+                    <p class="page-header__text">Estas son las ventajas que EduTrack aporta a estudiantes, docentes, familias e instituciones educativas.</p>
+                </div><!-- /.page-header__content -->
+            </div><!-- /.container -->
+            <img src="{% static 'landing/assets/images/shapes/page-header-shape-1.png' %}" alt="shape" class="page-header__shape-one">
+            <img src="{% static 'landing/assets/images/shapes/page-header-shape-2.png' %}" alt="shape" class="page-header__shape-two">
+            <div class="page-header__shape-three"></div><!-- /.page-header__shape-three -->
+            <div class="page-header__shape-four"></div><!-- /.page-header__shape-four -->
+        </section><!-- /.page-header -->
+
+        <section class="courses-page section-space">
+            <div class="container">
+                <div class="row gutter-y-30">
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-live-streaming"></i></span>
+                            <h3 class="benefit-card__title">Detección Temprana de Riesgo</h3>
+                            <p class="benefit-card__text">EduTrack analiza continuamente la asistencia, el rendimiento académico y otros indicadores para identificar a tiempo a los estudiantes con riesgo de deserción, permitiendo una intervención preventiva antes de que abandonen sus estudios.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-megaphone"></i></span>
+                            <h3 class="benefit-card__title">Alertas Automáticas en Tiempo Real</h3>
+                            <p class="benefit-card__text">El sistema envía notificaciones automáticas cuando detecta disminuciones en la asistencia, bajo rendimiento académico o cambios relevantes en el comportamiento del estudiante, permitiendo una intervención rápida por parte de docentes y familias.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-comments"></i></span>
+                            <h3 class="benefit-card__title">Comunicación entre Familia y Escuela</h3>
+                            <p class="benefit-card__text">EduTrack mantiene informados a docentes y padres mediante notificaciones oportunas, favoreciendo la comunicación y el seguimiento constante del progreso del estudiante.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-students"></i></span>
+                            <h3 class="benefit-card__title">Seguimiento Personalizado del Estudiante</h3>
+                            <p class="benefit-card__text">EduTrack permite visualizar la evolución de cada estudiante, facilitando el seguimiento de su desempeño y ayudando a brindar un acompañamiento más cercano durante todo el año escolar.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-ranking"></i></span>
+                            <h3 class="benefit-card__title">Toma de Decisiones Basada en Datos</h3>
+                            <p class="benefit-card__text">Los reportes y estadísticas permiten identificar tendencias, priorizar acciones y tomar decisiones oportunas para mejorar el rendimiento y la permanencia de los estudiantes.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-medal"></i></span>
+                            <h3 class="benefit-card__title">Mejora del Rendimiento Académico</h3>
+                            <p class="benefit-card__text">Al detectar necesidades de apoyo de forma temprana, EduTrack contribuye a que los estudiantes fortalezcan su aprendizaje y mejoren su desempeño académico durante el año escolar.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-setting"></i></span>
+                            <h3 class="benefit-card__title">Gestión Escolar Más Eficiente</h3>
+                            <p class="benefit-card__text">EduTrack reúne la información relevante de los estudiantes en un solo lugar, facilitando el seguimiento, la coordinación entre docentes y una gestión educativa más eficiente.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-clock-1"></i></span>
+                            <h3 class="benefit-card__title">Intervención Oportuna</h3>
+                            <p class="benefit-card__text">EduTrack facilita la identificación temprana de estudiantes en riesgo, permitiendo actuar rápidamente y brindar el apoyo necesario antes de que las dificultades se agraven.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-healthcare"></i></span>
+                            <h3 class="benefit-card__title">Bienestar Integral del Estudiante</h3>
+                            <p class="benefit-card__text">EduTrack promueve un entorno educativo más seguro y participativo, favoreciendo el bienestar, la motivación y el desarrollo integral de cada estudiante.</p>
+                        </div>
+                    </div>
+
+                </div><!-- /.row gutter-y-30 -->
+
+                <div class="benefits-cta wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                    <span class="benefits-cta__icon"><i class="icon-graduation"></i></span>
+                    <div class="benefits-cta__body">
+                        <h3>¿Quieres conocer EduTrack en acción?</h3>
+                        <p>Conversemos sobre cómo estos beneficios pueden aplicarse en tu institución educativa.</p>
+                    </div>
+                    <a href="{% url 'landing_contact' %}" class="eduhive-btn eduhive-btn--normal">
+                        <span>Contactar al equipo</span>
+                        <span class="eduhive-btn__icon">
+                            <span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span>
+                        </span>
+                    </a>
+                </div><!-- /.benefits-cta -->
+
+            </div><!-- /.container -->
+        </section><!-- /.courses-page section-space -->
+
+        <footer class="main-footer section-space-top">
+            <div class="container">
+                <div class="row gutter-y-40">
+                    <div class="col-xl-3 col-lg-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="footer-widget footer-widget--about">
+                            <h2 class="footer-widget__title">Contacto</h2><!-- /.footer-widget__title -->
+                            <ul class="footer-widget__info">
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-location"></i></span>
+                                    <a href="https://www.google.com/maps">Av. de la Marina 2810, San Miguel - 15087</a>
+                                </li>
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-email"></i></span>
+                                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                                </li>
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-telephone"></i></span>
+                                    <a href="tel:+51 4726516">+51 4726516</a>
+                                </li>
+                            </ul><!-- /.footer-widget__info -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-lg-4 -->
+                    <div class="col-xl-3 col-md-4 col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                        <div class="footer-widget footer-widget--links">
+                            <h2 class="footer-widget__title">Menú</h2><!-- /.footer-widget__title -->
+                            <ul class="list-unstyled footer-widget__links">
+                                <li>
+                                    <a href="{% url 'landing' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Inicio
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_about' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Quienes Somos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_functionalities' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Funcionalidades
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_benefits' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Beneficios
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="products.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Preguntas Frecuentes
+                                    </a>
+                                </li>
+                            </ul><!-- /.list-unstyled footer-widget__links -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 col-sm-6 -->
+                    <div class="col-xl-3 col-md-4 col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+                        <div class="footer-widget footer-widget--links">
+                            <h2 class="footer-widget__title">Soporte</h2><!-- /.footer-widget__title -->
+                            <ul class="list-unstyled footer-widget__links">
+                                <li>
+                                    <a href="apps-development.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Centro de Ayuda
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="digital-marketing.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Guías y tutoriales
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="graphics-design.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Términos y condiciones
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="uiux-design.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Política de cookies
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="data-science.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Política de privacidad
+                                    </a>
+                                </li>
+                            </ul><!-- /.list-unstyled footer-widget__links -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 col-sm-6 -->
+                    <div class="col-xl-3 col-md-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="300ms">
+                        <div class="footer-widget footer-widget--gallery">
+                            <h2 class="footer-widget__title">Síguenos</h2><!-- /.footer-widget__title -->
+                            <p class="footer-widget__text">
+                                Conecta con nosotros y conoce más sobre el proyecto Edutrack
+                            </p>
+                            <div class="footer-widget__social-icons">
+                                <a href="https://facebook.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://instagram.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="https://linkedin.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="https://youtube.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            </div>
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 -->
+                </div><!-- /.row gutter-y-40 -->
+            </div><!-- /.container -->
+            <div class="main-footer__bottom">
+                <div class="container">
+                    <div class="main-footer__bottom__inner">
+                        <p class="main-footer__copyright">
+                            &copy; Copyright <span class="dynamic-year"></span> by Edutrack HTML Template.
+                        </p>
+                    </div><!-- /.main-footer__inner -->
+                </div><!-- /.container -->
+            </div><!-- /.main-footer__bottom -->
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-1.png' %}" alt="shape" class="main-footer__shape-one">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-2.png' %}" alt="shape" class="main-footer__shape-two">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-3.png' %}" alt="shape" class="main-footer__shape-three">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-4.png' %}" alt="shape" class="main-footer__shape-four">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-5.png' %}" alt="shape" class="main-footer__shape-five">
+        </footer><!-- /.main-footer section-space-top -->
+
+    </div><!-- /.page-wrapper -->
+
+    <div class="mobile-nav__wrapper">
+        <div class="mobile-nav__overlay mobile-nav__toggler"></div><!-- /.mobile-nav__overlay -->
+        <div class="mobile-nav__content">
+            <span class="mobile-nav__close mobile-nav__toggler"><i class="icon-close"></i></span>
+            <div class="logo-box logo-retina">
+                <a href="{% url 'landing' %}" aria-label="logo image">
+                    <img src="{% static 'landing/assets/images/logo-Edutrack-white.png' %}" width="209" alt="" />
+                </a>
+            </div><!-- /.logo-box -->
+            <div class="mobile-nav__container"></div><!-- /.mobile-nav__container -->
+            <ul class="mobile-nav__contact list-unstyled">
+                <li>
+                    <span class="mobile-nav__contact__icon"><i class="fa fa-envelope"></i></span>
+                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                </li>
+                <li>
+                    <span class="mobile-nav__contact__icon"><i class="fa fa-phone-alt"></i></span>
+                    <a href="tel:+51 4726516">+51 4726516</a>
+                </li>
+            </ul><!-- /.mobile-nav__contact -->
+            <div class="mobile-nav__social social-links-two">
+                <a href="https://facebook.com">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Facebook</span>
+                </a>
+                <a href="https://twitter.com">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-twitter" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Twitter</span>
+                </a>
+                <a href="https://instagram.com">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-instagram" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Instagram</span>
+                </a>
+                <a href="https://youtube.com">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-youtube" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Youtube</span>
+                </a>
+            </div><!-- /.mobile-nav__social -->
+        </div><!-- /.mobile-nav__content -->
+    </div><!-- /.mobile-nav__wrapper -->
+    <div class="search-popup">
+        <div class="search-popup__overlay search-toggler"></div>
+        <!-- /.search-popup__overlay -->
+        <div class="search-popup__content">
+            <form role="search" method="get" class="search-popup__form" action="#">
+                <input type="text" id="search" placeholder="Search Here..." />
+                <button type="submit" aria-label="search submit" class="eduhive-btn">
+                    <i class="icon-search"></i>
+                </button>
+            </form>
+        </div>
+        <!-- /.search-popup__content -->
+    </div>
+    <!-- /.search-popup -->
+
+    <a href="#" data-target="html" class="scroll-to-target scroll-to-top">
+        <span class="scroll-to-top__text">back top</span>
+        <span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span>
+    </a>
+
+    <script src="{% static 'landing/assets/vendors/jquery/jquery-3.7.0.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jarallax/jarallax.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-ajaxchimp/jquery.ajaxchimp.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-appear/jquery.appear.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-circle-progress/jquery.circle-progress.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-validate/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/nouislider/nouislider.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/wnumb/wNumb.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-filter.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-progressbar.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/wow/wow.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/imagesloaded/imagesloaded.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/isotope/isotope.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/countdown/countdown.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-circleType/jquery.circleType.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-lettering/jquery.lettering.min.js' %}"></script>
+    <!-- template js -->
+    <script src="{% static 'landing/assets/js/eduhive.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,707 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sobre nosotros | EduTrack</title>
+    <!-- favicons Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'landing/assets/images/favicons/apple-touch-icon.png' %}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'landing/assets/images/favicons/favicon-32x32.png' %}" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'landing/assets/images/favicons/favicon-16x16.png' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/css/eduhive.css' %}">
+    <meta name="description" content="Eduhive is a very modern and versatile education & online courses HTML Template. It is specially designed for LMS, online courses, education, learning management, e-learning, online training, zoom classes, and all other education related websites and businesses." />
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/animate/animate.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/fontawesome/css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jarallax/jarallax.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.pips.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/eduhive-icons/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.carousel.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.theme.default.min.css' %}" />
+
+    <!-- template styles -->
+    <link rel="stylesheet" href="{% static 'landing/assets/css/eduhive.css' %}" />
+</head>
+
+<body class="custom-cursor">
+
+    <div class="custom-cursor__cursor"></div>
+    <div class="custom-cursor__cursor-two"></div>
+
+    <div class="preloader">
+        <div class="preloader__image" style="background-image: url(assets/images/loader.png);"></div>
+    </div>
+    <!-- /.preloader -->
+    <div class="page-wrapper">
+        <div class="topbar">
+            <div class="container-fluid">
+                <div class="topbar__inner">
+                    <ul class="list-unstyled topbar__info">
+                        <li>
+                            <span class="topbar__info__icon topbar__info__icon--email">
+                                <i class="icon-email"></i>
+                            </span>
+                            <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                        </li>
+                        <li>
+                            <span class="topbar__info__icon">
+                                <i class="icon-telephone"></i>
+                            </span>
+                            <a href="tel:+51 4726516">+51 4726516</a>
+                        </li>
+                        <li>
+                            <span class="topbar__info__icon">
+                                <i class="icon-location"></i>
+                            </span>
+                            <a href="https://maps.app.goo.gl/kPxHjEaRN2Vk9ch8A">Av. de la Marina 2810, San Miguel - 15087</a>
+                        </li>
+                    </ul><!-- /.list-unstyled topbar__info -->
+                    <div class="topbar__social social-links">
+                        <a href="https://facebook.com">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                            <span class="sr-only">Facebook</span>
+                        </a>
+                        <a href="https://instagram.com/">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                            <span class="sr-only">Twitter</span>
+                        </a>
+                        <a href="https://linkedin.com">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                            <span class="sr-only">Linkedin</span>
+                        </a>
+                        <a href="https://youtube.com">
+                            <i class="fab fa-youtube" aria-hidden="true"></i>
+                            <span class="sr-only">Youtube</span>
+                        </a>
+                    </div><!-- /.topbar__social social-links -->
+                </div>
+            </div><!-- /.container-fluid -->
+        </div><!-- /.topbar -->
+
+        <header class="main-header sticky-header sticky-header--normal">
+            <div class="container-fluid">
+                <div class="main-header__inner">
+                    <div class="main-header__logo logo-retina">
+                        <a href="{% url 'landing' %}">
+                            <img src="{% static 'landing/assets/images/logo-Edutrack-remove.png' %}" alt="eduhive HTML" width="209">
+                        </a>
+                    </div><!-- /.main-header__logo -->
+                    <div class="main-header__right">
+                        <nav class="main-header__nav main-menu">
+                            <ul class="main-menu__list">
+
+
+                                <li>
+                                    <a href="{% url 'landing' %}">Inicio</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_about' %}">Quienes somos</a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#">Funcionalidades</a>
+                                    <ul>
+                                        <li><a href="{% url 'landing_functionalities' %}">Funcionalidades principales</a></li>
+                                        <li><a href="{% url 'accounts:login' %}">Log In</a></li>
+                                        <li><a href="404.html">404 Error</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_benefits' %}">Beneficios</a>
+                                </li>
+                                <li>
+                                    <a href="products.html">Preguntas Frecuentes</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_contact' %}">Contacto</a>
+                                </li>
+                            </ul>
+                        </nav><!-- /.main-header__nav -->
+                        <div class="mobile-nav__btn mobile-nav__toggler">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div><!-- /.mobile-nav__toggler -->
+                        <a href="#" class="search-toggler main-header__search">
+                            <i class="icon-search" aria-hidden="true"></i>
+                            <span class="sr-only">Search</span>
+                        </a><!-- /.search-toggler -->
+                        <a href="{% url 'landing_contact' %}" class="main-header__btn eduhive-btn eduhive-btn--border">
+                            <span>Ingresar al sistema</span>
+                            <span class="eduhive-btn__icon">
+                                <span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span>
+                            </span>
+                        </a><!-- /.main-header__btn eduhive-btn -->
+                    </div><!-- /.main-header__right -->
+                </div><!-- /.main-header__inner -->
+            </div><!-- /.container-fluid -->
+        </header><!-- /.main-header -->
+
+        <section class="page-header">
+            <div class="container">
+                <div class="page-header__content">
+                    <ul class="eduhive-breadcrumb list-unstyled">
+                        <li><span class="eduhive-breadcrumb__icon"><i class="icon-home"></i></span><a href="{% url 'landing' %}">Home</a></li>
+                        <li><span>Sobre nosotros</span></li>
+                    </ul><!-- /.eduhive-breadcrumb list-unstyled -->
+                    <h2 class="page-header__title">Sobre nosotros</h2>
+                </div><!-- /.page-header__content -->
+            </div><!-- /.container -->
+            <img src="{% static 'landing/assets/images/shapes/page-header-shape-1.png' %}" alt="shape" class="page-header__shape-one">
+            <img src="{% static 'landing/assets/images/shapes/page-header-shape-2.png' %}" alt="shape" class="page-header__shape-two">
+            <div class="page-header__shape-three"></div><!-- /.page-header__shape-three -->
+            <div class="page-header__shape-four"></div><!-- /.page-header__shape-four -->
+        </section><!-- /.page-header -->
+
+        <section class="about-two section-space">
+            <div class="container">
+                <div class="row gutter-y-60">
+                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="about-two__image">
+                            <img src="{% static 'landing/assets/images/about/imagen1-about.png' %}" alt="about image" class="about-two__image__one">
+                            <img src="{% static 'landing/assets/images/shapes/about-shape-2-1.png' %}" alt="shape" class="about-two__image__shape-one">
+                            <div class="about-two__image__shape-box"></div><!-- /.about-two__image__shape-box -->
+                        </div><!-- /.about-two__image -->
+                    </div><!-- /.col-lg-6 -->
+                    <div class="col-lg-6">
+                        <div class="about-two__content">
+                            <div class="sec-title wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                <h6 class="sec-title__tagline">SOBRE NOSOTROS</h6><!-- /.sec-title__tagline -->
+                            <h3 class="sec-title__title" style="text-transform: none;">Monitoreo inteligente <br> <span class="sec-title__title__shape">para prevenir</span> <br> la <span class="sec-title__title__text">deserción escolar</span></h3><!-- /.sec-title__title -->
+                            </div><!-- /.sec-title -->
+                            <div class="about-two__description wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                <p class="about-two__text">Nuestra plataforma analiza indicadores críticos de asistencia, rendimiento académico y conducta en tiempo real, permitiendo a las instituciones educativas actuar de manera oportuna antes de que un estudiante abandone sus estudios.</p><!-- /.about-two__text -->
+                            </div><!-- /.about-two__description -->
+                            <div class="about-two__row row">
+                                <div class="col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                    <div class="about-two__info">
+                                        <span class="about-two__info__icon">
+                                            <i class="icon-check-2"></i>
+                                        </span><!-- /.about-two__info__icon -->
+                                        <h4 class="about-two__info__title">Alertas en tiempo real</h4><!-- /.about-two__info__title -->
+                                    </div><!-- /.about-two__info -->
+                                </div><!-- /.col-sm-6 -->
+                                <div class="col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                                    <div class="about-two__info">
+                                        <span class="about-two__info__icon">
+                                            <i class="icon-check-2"></i>
+                                        </span><!-- /.about-two__info__icon -->
+                                        <h4 class="about-two__info__title">Reportes automatizados</h4><!-- /.about-two__info__title -->
+                                    </div><!-- /.about-two__info -->
+                                </div><!-- /.col-sm-6 -->
+                                <div class="col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                    <div class="about-two__info">
+                                        <span class="about-two__info__icon">
+                                            <i class="icon-check-2"></i>
+                                        </span><!-- /.about-two__info__icon -->
+                                        <h4 class="about-two__info__title">Gestión Multiactor</h4><!-- /.about-two__info__title -->
+                                    </div><!-- /.about-two__info -->
+                                </div><!-- /.col-sm-6 -->
+                                <div class="col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                                    <div class="about-two__info">
+                                        <span class="about-two__info__icon">
+                                            <i class="icon-check-2"></i>
+                                        </span><!-- /.about-two__info__icon -->
+                                        <h4 class="about-two__info__title">Intervención Oportuna</h4><!-- /.about-two__info__title -->
+                                    </div><!-- /.about-two__info -->
+                                </div><!-- /.col-sm-6 -->
+                            </div><!-- /.about-two__row row -->
+                            <div class="about-two__button wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                           
+                            </div><!-- /.about-two__button -->
+                        </div><!-- /.about-two__content -->
+                    </div><!-- /.col-lg-6 -->
+                </div><!-- /.row gutter-y-60 -->
+            </div><!-- /.container -->
+        </section><!-- /.about-two section-space -->
+
+        <section class="funfact-one funfact-one--round">
+            <div class="container">
+                <div class="funfact-one__grid">
+                    <div class="funfact-one__item funfact-one__item--secondary wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="funfact-one__icon">
+                            <span class="funfact-one__icon__inner"><i class="icon-connectibity"></i></span>
+                        </div><!-- /.funfact-one__icon -->
+                        <h3 class="funfact-one__title count-box">
+                            <span class="count-text" data-stop="25" data-speed="1500">0</span>
+                            <span>k+</span>
+                        </h3><!-- /.funfact-one__title -->
+                        <p class="funfact-one__text">Estudiantes Monitoreados</p><!-- /.funfact-one__text -->
+                    </div><!-- /.funfact-one__item -->
+                    <div class="funfact-one__item funfact-one__item--primary wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                        <div class="funfact-one__icon">
+                            <span class="funfact-one__icon__inner"><i class="icon-batch-assign"></i></span>
+                        </div><!-- /.funfact-one__icon -->
+                        <h3 class="funfact-one__title count-box">
+                            <span class="count-text" data-stop="12" data-speed="1500">0</span>
+                            <span>k+</span>
+                        </h3><!-- /.funfact-one__title -->
+                        <p class="funfact-one__text">Alertas Procesadas</p><!-- /.funfact-one__text -->
+                    </div><!-- /.funfact-one__item -->
+                    <div class="funfact-one__item funfact-one__item--secondary wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+                        <div class="funfact-one__icon">
+                            <span class="funfact-one__icon__inner"><i class="icon-students"></i></span>
+                        </div><!-- /.funfact-one__icon -->
+                        <h3 class="funfact-one__title count-box">
+                            <span class="count-text" data-stop="4500" data-speed="1500">0</span>
+                            <span>+</span>
+                        </h3><!-- /.funfact-one__title -->
+                        <p class="funfact-one__text">Casos Atendidos</p><!-- /.funfact-one__text -->
+                    </div><!-- /.funfact-one__item -->
+                </div><!-- /.rfunfact-one__grid -->
+            </div><!-- /.container -->
+        </section><!-- /.funfact-one -->
+
+        <section class="offer-one section-space-top">
+            <div class="container">
+                <div class="row gutter-y-60">
+                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms">
+                        <div class="offer-one__image">
+                            <img src="{% static 'landing/assets/images/about/imagen-about.png' %}" class="offer-one__image__one">
+                            <img src="{% static 'landing/assets/images/shapes/offer-shape-1-1.png' %}" alt="offer shape" class="offer-one__image__shape">
+                        </div><!-- /.offer-one__image -->
+                    </div><!-- /.col-lg-6 -->
+                    <div class="col-lg-6">
+                        <div class="offer-one__content">
+                            <div class="sec-title wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                <h6 class="sec-title__tagline">¿Qué es Edutrack?</h6><!-- /.sec-title__tagline -->
+                                <h3 class="sec-title__title"><span class="sec-title__title__shape">Tu aliado</span> estratégico <span class="sec-title__title__text">contra la deserción escolar</span></h3><!-- /.sec-title__title -->
+                            </div><!-- /.sec-title -->
+                            <div class="offer-one__inner">
+                                <div class="offer-one__item wow fadeInUp" data-wow-duration="1500ms">
+                                    <div class="offer-one__item__icon offer-one__item__icon--primary">
+                                        <i class="icon-instructors"></i>
+                                    </div><!-- /.offer-one__item__icon -->
+                                    <div class="offer-one__item__content">
+                                        <h4 class="offer-one__item__title">Alertas en Tiempo Real</h4>
+                                        <p class="offer-one__item__text">Identificación automática de estudiantes en riesgo mediante el procesamiento inmediato de señales e indicadores educativos.</p>
+                                    </div><!-- /.offer-one__item__content -->
+                                </div><!-- /.offer-one__item -->
+                                <div class="offer-one__item wow fadeInUp" data-wow-duration="1500ms">
+                                    <div class="offer-one__item__icon offer-one__item__icon--secondary">
+                                        <i class="icon-copy-writing"></i>
+                                    </div><!-- /.offer-one__item__icon -->
+                                    <div class="offer-one__item__content">
+                                        <h4 class="offer-one__item__title">Seguimiento Multiactor</h4>
+                                        <p class="offer-one__item__text">Espacios de comunicación y tableros personalizados diseñados especialmente para directores, docentes y padres de familia.</p>
+                                    </div><!-- /.offer-one__item__content -->
+                                </div><!-- /.offer-one__item -->
+                                <div class="offer-one__item wow fadeInUp" data-wow-duration="1500ms">
+                                    <div class="offer-one__item__icon offer-one__item__icon--base">
+                                        <i class="icon-community"></i>
+                                    </div><!-- /.offer-one__item__icon -->
+                                    <div class="offer-one__item__content">
+                                        <h4 class="offer-one__item__title">Intervención Oportuna</h4>
+                                        <p class="offer-one__item__text">Herramientas dinámicas orientadas a mitigar el abandono escolar y devolver a los alumnos al camino del aprendizaje en la educación básica.</p>
+                                    </div><!-- /.offer-one__item__content -->
+                                </div><!-- /.offer-one__item -->
+                            </div><!-- /.offer-one__inner -->
+                        </div><!-- /.offer-one__content -->
+                    </div><!-- /.col-lg-6 -->
+                </div><!-- /.row gutter-y-60 -->
+            </div><!-- /.container -->
+            <div class="offer-one__shape-box"></div><!-- /.offer-one__shape -->
+        </section><!-- /.offer-one section-space-top -->
+
+        <section class="testimonials-three section-space2" id="testimonials">
+            <div class="testimonials-three__bg" style="background-image: url(assets/images/shapes/testimonials-bg-3-1.png);">
+            </div><!-- /.testimonials-three__bg -->
+            <div class="container">
+                <div class="sec-title sec-title--center wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                    <h6 class="sec-title__tagline">Testimonios</h6><!-- /.sec-title__tagline -->
+                    <h3 class="sec-title__title" style="text-transform: none;">Lo que <span class="sec-title__title__text">dicen de</span> <span class="sec-title__title__shape">EduTrack</span></h3><!-- /.sec-title__title -->
+                </div><!-- /.sec-title -->
+                <div class="testimonials-three__carousel eduhive-owl__carousel eduhive-owl__carousel--basic-nav eduhive-owl__carousel--with-shadow owl-theme owl-carousel" data-owl-options='{
+            "items": 3,
+            "margin": 30,
+            "smartSpeed": 700,
+            "loop":true,
+            "autoplay": 6000,
+            "nav":true,
+            "dots":false,
+            "navText": ["<span class=\"icon-arrow-left\"></span>","<span class=\"icon-arrow-right\"></span>"],
+            "responsive":{
+                "0":{
+                    "items": 1,
+                    "margin": 10
+                },
+                "768":{
+                    "items": 2,
+                    "margin": 30
+                },
+                "1200":{
+                    "items": 3,
+                    "margin": 30
+                }
+              }
+            }'>
+                    <div class="item wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="testimonial-card-three">
+                            <div class="testimonial-card-three__content">
+                                <div class="testimonial-card-three__icon">
+                                    <span class="icon-quote"></span>
+                                </div><!-- /.testimonial-card-three__icon -->
+                                <div class="testimonial-card-three__identity">
+                                    <h5 class="testimonial-card-three__name">Miguel García</h5>
+                                    <p class="testimonial-card-three__designation">Director de I.E. Básica</p>
+                                </div><!-- /.testimonial-card-three__identity -->
+                                <p class="testimonial-card-three__quote">Gracias a las alertas tempranas automatizadas pudimos identificar a tiempo a estudiantes en riesgo crítico de abandono este trimestre y coordinar su retorno oportuno a las aulas.</p><!-- /.testimonial-card-three__quote -->
+                                <div class="eduhive-ratings">
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                </div><!-- /.product-ratings -->
+                            </div><!-- /.testimonial-card-three__content -->
+                        </div><!-- /.testimonial-card-three -->
+                    </div><!-- /.owl-slide-item-->
+                    <div class="item wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                        <div class="testimonial-card-three">
+                            <div class="testimonial-card-three__content">
+                                <div class="testimonial-card-three__icon">
+                                    <span class="icon-quote"></span>
+                                </div><!-- /.testimonial-card-three__icon -->
+                                <div class="testimonial-card-three__identity">
+                                    <h5 class="testimonial-card-three__name">Sara Alva</h5>
+                                    <p class="testimonial-card-three__designation">Docente de Educación Primaria</p>
+                                </div><!-- /.testimonial-card-three__identity -->
+                                <p class="testimonial-card-three__quote">El sistema me permite centralizar las señales de asistencia y rendimiento de forma muy rápida. Logramos reducir drásticamente el papeleo y enfocarnos en ayudar a los alumnos.</p><!-- /.testimonial-card-three__quote -->
+                                <div class="eduhive-ratings">
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                </div><!-- /.product-ratings -->
+                            </div><!-- /.testimonial-card-three__content -->
+                        </div><!-- /.testimonial-card-three -->
+                    </div><!-- /.owl-slide-item-->
+                    <div class="item wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+                        <div class="testimonial-card-three">
+                            <div class="testimonial-card-three__content">
+                                <div class="testimonial-card-three__icon">
+                                    <span class="icon-quote"></span>
+                                </div><!-- /.testimonial-card-three__icon -->
+                                <div class="testimonial-card-three__identity">
+                                    <h5 class="testimonial-card-three__name">Kevin Martin</h5>
+                                    <p class="testimonial-card-three__designation">Padre de Familia</p>
+                                </div><!-- /.testimonial-card-three__identity -->
+                                <p class="testimonial-card-three__quote">Ahora puedo estar al tanto de las alertas de asistencia de mi hijo de manera directa. Me permite actuar a tiempo en casa antes de que sus notas o su continuidad en el colegio se vean afectadas.</p><!-- /.testimonial-card-three__quote -->
+                                <div class="eduhive-ratings">
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                    <span class="eduhive-ratings__icon">
+                                        <i class="fa fa-star"></i>
+                                    </span><!-- /.eduhive-ratings__icon -->
+                                </div><!-- /.product-ratings -->
+                            </div><!-- /.testimonial-card-three__content -->
+                        </div><!-- /.testimonial-card-three -->
+                    </div><!-- /.owl-slide-item-->
+                </div><!-- /.thm-owl__slider -->
+            </div><!-- /.container -->
+            <img src="{% static 'landing/assets/images/shapes/testimonial-shape-3-1.png' %}" alt="shape" class="testimonials-three__shape-one">
+            <img src="{% static 'landing/assets/images/shapes/testimonial-shape-3-2.png' %}" alt="shape" class="testimonials-three__shape-two">
+            <img src="{% static 'landing/assets/images/shapes/testimonial-shape-3-3.png' %}" alt="shape" class="testimonials-three__shape-three">
+            <div class="testimonials-three__shape-box"></div><!-- /.testimonials-three__shape-box -->
+        </section><!-- /.testimonials-three section-space2 -->
+
+        
+
+        <footer class="main-footer section-space-top">
+            <div class="container">
+                <div class="row gutter-y-40">
+                    <div class="col-xl-3 col-lg-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="footer-widget footer-widget--about">
+                            <h2 class="footer-widget__title">Contacto</h2><!-- /.footer-widget__title -->
+                            <ul class="footer-widget__info">
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-location"></i></span>
+                                    <a href="https://www.google.com/maps">Av. de la Marina 2810, San Miguel - 15087</a>
+                                </li>
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-email"></i></span>
+                                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                                </li>
+                                <li>
+                                    <span class="footer-widget__info__icon"><i class="icon-telephone"></i></span>
+                                    <a href="tel:+51 4726516">+51 4726516</a>
+                                </li>
+                            </ul><!-- /.footer-widget__info -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-lg-4 -->
+                    <div class="col-xl-3 col-md-4 col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                        <div class="footer-widget footer-widget--links">
+                            <h2 class="footer-widget__title">Menú</h2><!-- /.footer-widget__title -->
+                            <ul class="list-unstyled footer-widget__links">
+                                <li>
+                                    <a href="{% url 'landing_about' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Inicio
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_benefits' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Quienes Somos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_functionalities' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Funcionalidades
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="instructor-details.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Beneficios
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'landing_contact' %}">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Preguntas Frecuentes
+                                    </a>
+                                </li>
+                            </ul><!-- /.list-unstyled footer-widget__links -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 col-sm-6 -->
+                    <div class="col-xl-3 col-md-4 col-sm-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+                        <div class="footer-widget footer-widget--links">
+                            <h2 class="footer-widget__title">Soporte</h2><!-- /.footer-widget__title -->
+                            <ul class="list-unstyled footer-widget__links">
+                                <li>
+                                    <a href="apps-development.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Centro de Ayuda
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="digital-marketing.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Guías y tutoriales
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="graphics-design.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Términos y condiciones
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="uiux-design.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Política de cookies
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="data-science.html">
+                                        <span class="footer-widget__links__icon">
+                                            <i class="icon-double-arrow"></i>
+                                        </span>
+                                        Política de privacidad
+                                    </a>
+                                </li>
+                            </ul><!-- /.list-unstyled footer-widget__links -->
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 col-sm-6 -->
+                    <div class="col-xl-3 col-md-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="300ms">
+                        <div class="footer-widget footer-widget--gallery">
+                            <h2 class="footer-widget__title">Síguenos</h2><!-- /.footer-widget__title -->
+                            <!-- TEXTO NUEVO -->
+                            <p class="footer-widget__text">
+                                Conecta con nosotros y conoce más sobre el proyecto Edutrack
+                            </p>
+                            <!-- ICONOS REDES SOCIALES -->
+                            <div class="footer-widget__social-icons">
+                                <a href="https://facebook.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://instagram.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="https://linkedin.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="https://youtube.com" target="_blank" class="social-icon">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            </div>
+                        </div><!-- /.footer-widget -->
+                    </div><!-- /.col-xl-3 col-md-4 -->
+                </div><!-- /.row gutter-y-40 -->
+            </div><!-- /.container -->
+            <div class="main-footer__bottom">
+                <div class="container">
+                    <div class="main-footer__bottom__inner">
+                        <p class="main-footer__copyright">
+                            &copy; Copyright <span class="dynamic-year"></span> by Edutrack
+                        </p>
+                    </div><!-- /.main-footer__inner -->
+                </div><!-- /.container -->
+            </div><!-- /.main-footer__bottom -->
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-1.png' %}" alt="shape" class="main-footer__shape-one">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-2.png' %}" alt="shape" class="main-footer__shape-two">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-3.png' %}" alt="shape" class="main-footer__shape-three">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-4.png' %}" alt="shape" class="main-footer__shape-four">
+            <img src="{% static 'landing/assets/images/shapes/footer-shape-5.png' %}" alt="shape" class="main-footer__shape-five">
+        </footer><!-- /.main-footer section-space-top -->
+
+    </div><!-- /.page-wrapper -->
+
+    <div class="mobile-nav__wrapper">
+        <div class="mobile-nav__overlay mobile-nav__toggler"></div><!-- /.mobile-nav__overlay -->
+        <div class="mobile-nav__content">
+            <span class="mobile-nav__close mobile-nav__toggler"><i class="icon-close"></i></span>
+            <div class="logo-box logo-retina">
+                <a href="{% url 'landing' %}" aria-label="logo image">
+                    <img src="{% static 'landing/assets/images/logo-Edutrack-white.png' %}" width="209" alt="" />
+                </a>
+            </div><!-- /.logo-box -->
+            <div class="mobile-nav__container"></div><!-- /.mobile-nav__container -->
+            <ul class="mobile-nav__contact list-unstyled">
+                <li>
+                    <span class="mobile-nav__contact__icon"><i class="fa fa-envelope"></i></span>
+                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
+                </li>
+                <li>
+                    <span class="mobile-nav__contact__icon"><i class="fa fa-phone-alt"></i></span>
+                    <a href="tel:+51 4726516">+51 4726516</a>
+                </li>
+            </ul><!-- /.mobile-nav__contact -->
+            <div class="mobile-nav__social social-links-two">
+                <a href="https://facebook.com" target="_blank">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Facebook</span>
+                </a>
+                <a href="https://twitter.com" target="_blank">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-twitter" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Twitter</span>
+                </a>
+                <a href="https://instagram.com" target="_blank">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-instagram" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Instagram</span>
+                </a>
+                <a href="https://youtube.com" target="_blank">
+                    <span class="social-links-two__icon">
+                        <i class="fab fa-youtube" aria-hidden="true"></i>
+                    </span><!-- /.social-links-two__icon -->
+                    <span class="sr-only">Youtube</span>
+                </a>
+            </div><!-- /.mobile-nav__social -->
+        </div><!-- /.mobile-nav__content -->
+    </div><!-- /.mobile-nav__wrapper -->
+    <div class="search-popup">
+        <div class="search-popup__overlay search-toggler"></div>
+        <!-- /.search-popup__overlay -->
+        <div class="search-popup__content">
+            <form role="search" method="get" class="search-popup__form" action="#">
+                <input type="text" id="search" placeholder="Buscar aquí..." />
+                <button type="submit" aria-label="search submit" class="eduhive-btn">
+                    <i class="icon-search"></i>
+                </button>
+            </form>
+        </div>
+        <!-- /.search-popup__content -->
+    </div>
+    <!-- /.search-popup -->
+
+    <a href="#" data-target="html" class="scroll-to-target scroll-to-top">
+        <span class="scroll-to-top__text">Edutrack</span>
+        <span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span>
+    </a>
+
+    <script src="{% static 'landing/assets/vendors/jquery/jquery-3.7.0.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jarallax/jarallax.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-ajaxchimp/jquery.ajaxchimp.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-appear/jquery.appear.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-circle-progress/jquery.circle-progress.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-validate/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/nouislider/nouislider.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/wnumb/wNumb.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-filter.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-progressbar.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/wow/wow.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/imagesloaded/imagesloaded.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/isotope/isotope.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/countdown/countdown.min.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-circleType/jquery.circleType.js' %}"></script>
+    <script src="{% static 'landing/assets/vendors/jquery-lettering/jquery.lettering.min.js' %}"></script>
+    <!-- template js -->
+    <script src="{% static 'landing/assets/js/eduhive.js' %}"></script>
+</body>
+
+</html>
