@@ -168,7 +168,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
     environment:
       name: production
-      url: https://edutrack-prod-server.onrender.com
+      url: https://edutrack-prod-server-764d.onrender.com/
     concurrency:
       group: render-production
       cancel-in-progress: false
