@@ -758,6 +758,19 @@ def reporte_minedu(request):
         total_medio += medio
         total_alto += alto
 
+    total_alumnos = total_bajo + total_medio + total_alto
+    if total_alumnos > 0:
+        riesgo_nacional_pct = (total_medio * 1 + total_alto * 2) / (total_alumnos * 2) * 100
+    else:
+        riesgo_nacional_pct = 0
+
+    if riesgo_nacional_pct >= 50:
+        riesgo_nacional_nivel = Alerta.NivelRiesgo.ALTO
+    elif riesgo_nacional_pct >= 25:
+        riesgo_nacional_nivel = Alerta.NivelRiesgo.MEDIO
+    else:
+        riesgo_nacional_nivel = Alerta.NivelRiesgo.BAJO
+
     return render(
         request,
         "academico/reporte_minedu.html",
@@ -766,7 +779,9 @@ def reporte_minedu(request):
             "total_bajo": total_bajo,
             "total_medio": total_medio,
             "total_alto": total_alto,
-            "total_alumnos": total_bajo + total_medio + total_alto,
+            "total_alumnos": total_alumnos,
+            "riesgo_nacional_pct": riesgo_nacional_pct,
+            "riesgo_nacional_nivel": riesgo_nacional_nivel,
         },
     )
 

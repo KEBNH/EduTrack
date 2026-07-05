@@ -7,7 +7,7 @@
     </div>
 </div>
 
-<div class="row row-cols-1 row-cols-md-4 g-3 mb-3">
+<div class="row row-cols-1 row-cols-md-5 g-3 mb-3">
     <div class="col">
         <div class="card">
             <div class="card-body">
@@ -37,6 +37,20 @@
             <div class="card-body">
                 <p class="text-muted mb-1">Riesgo alto</p>
                 <h3 class="mb-0 text-danger">{{ total_alto }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-1">Riesgo nacional</p>
+                {% if riesgo_nacional_nivel == "ALTO" %}
+                <h3 class="mb-0 text-danger">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% elif riesgo_nacional_nivel == "MEDIO" %}
+                <h3 class="mb-0 text-warning">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% else %}
+                <h3 class="mb-0 text-success">{{ riesgo_nacional_pct|floatformat:1 }}%</h3>
+                {% endif %}
             </div>
         </div>
     </div>

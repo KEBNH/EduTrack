@@ -2147,3 +2147,11 @@ class ReporteMineduTests(TestCase):
         response = self.client.get(reverse("academico:reporte_minedu"))
 
         self.assertEqual(response.status_code, 403)
+
+    def test_calcula_riesgo_nacional_agregado(self):
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        # total_medio=1, total_alto=1, total_alumnos=4
+        # riesgo_nacional = (1*1 + 1*2) / (4*2) * 100 = 37.5
+        self.assertAlmostEqual(response.context["riesgo_nacional_pct"], 37.5)
+        self.assertEqual(response.context["riesgo_nacional_nivel"], Alerta.NivelRiesgo.MEDIO)
