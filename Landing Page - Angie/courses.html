@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register || Eduhive || Education & Online Courses HTML Template</title>
+    <title>Beneficios || EduTrack</title>
     <!-- favicons Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicons/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicons/favicon-16x16.png" />
     <link rel="manifest" href="assets/images/favicons/site.webmanifest" />
-    <meta name="description" content="Eduhive is a very modern and versatile education & online courses HTML Template. It is specially designed for LMS, online courses, education, learning management, e-learning, online training, zoom classes, and all other education related websites and businesses." />
+    <meta name="description" content="Conoce los beneficios de EduTrack: detección temprana de riesgo, alertas automáticas, seguimiento personalizado y mejora del rendimiento académico." />
 
     <!-- fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +33,105 @@
 
     <!-- template styles -->
     <link rel="stylesheet" href="assets/css/eduhive.css" />
+
+    <!-- estilos propios de la pagina "Beneficios" (usan las variables ya definidas en eduhive.css) -->
+    <style>
+        .benefit-card {
+            height: 100%;
+            padding: 38px 32px;
+            background-color: var(--eduhive-white, #FFFFFF);
+            border: 1px solid var(--eduhive-border-color, #DBD8E6);
+            border-radius: 20px;
+            transition: 400ms ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-6px);
+            border-color: transparent;
+            box-shadow: 0px 10px 60px 0px rgba(var(--eduhive-black-rgb, 32, 16, 75), 0.08);
+        }
+
+        .benefit-card__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            font-size: 26px;
+        }
+
+        .benefit-card:nth-of-type(6n+1) .benefit-card__icon { background-color: rgba(var(--eduhive-base-rgb, 103, 76, 239), 0.1); color: var(--eduhive-base, #674CEF); }
+        .benefit-card:nth-of-type(6n+2) .benefit-card__icon { background-color: rgba(var(--eduhive-pink-rgb, 239, 46, 115), 0.1); color: var(--eduhive-pink, #EF2E73); }
+        .benefit-card:nth-of-type(6n+3) .benefit-card__icon { background-color: rgba(var(--eduhive-secondary-rgb, 57, 212, 214), 0.12); color: #17A5A7; }
+        .benefit-card:nth-of-type(6n+4) .benefit-card__icon { background-color: rgba(var(--eduhive-primary-rgb, 239, 128, 46), 0.12); color: var(--eduhive-primary, #EF802E); }
+        .benefit-card:nth-of-type(6n+5) .benefit-card__icon { background-color: rgba(var(--eduhive-green-rgb, 111, 207, 151), 0.15); color: #2E9A61; }
+        .benefit-card:nth-of-type(6n+6) .benefit-card__icon { background-color: rgba(var(--eduhive-blue-rgb, 67, 201, 255), 0.14); color: #1591C7; }
+
+        .benefit-card__title {
+            margin-bottom: 12px;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--eduhive-black, #20104B);
+        }
+
+        .benefit-card__text {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--eduhive-text, #7B7980);
+        }
+
+        /* ---------- Banner CTA ---------- */
+        .benefits-cta {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 44px 50px;
+            background-color: var(--eduhive-white3, #F7F3FF);
+            border-radius: 20px;
+        }
+
+        .benefits-cta__icon {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background-color: var(--eduhive-base, #674CEF);
+            color: var(--eduhive-white, #FFFFFF);
+            font-size: 26px;
+        }
+
+        .benefits-cta__body {
+            flex: 1 1 380px;
+        }
+
+        .benefits-cta__body h3 {
+            margin-bottom: 8px;
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--eduhive-black, #20104B);
+        }
+
+        .benefits-cta__body p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--eduhive-text, #7B7980);
+        }
+
+        @media (max-width: 767px) {
+            .benefit-card { padding: 30px 24px; }
+            .benefits-cta { padding: 32px; text-align: center; justify-content: center; }
+            .benefits-cta__body { flex-basis: 100%; }
+        }
+    </style>
 </head>
 
 <body class="custom-cursor">
@@ -53,7 +152,7 @@
                             <span class="topbar__info__icon topbar__info__icon--email">
                                 <i class="icon-email"></i>
                             </span>
-                            <a href="mailto:soporte@Edutrack.edu.pe">soporte@Edutrack.edu.pe</a>
+                            <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
                         </li>
                         <li>
                             <span class="topbar__info__icon">
@@ -73,10 +172,10 @@
                             <i class="fab fa-facebook-f" aria-hidden="true"></i>
                             <span class="sr-only">Facebook</span>
                         </a>
-                            <a href="https://instagram.com/">
-                                <i class="fab fa-instagram" aria-hidden="true"></i>
-                                <span class="sr-only">Instagram</span>
-                            </a>
+                        <a href="https://instagram.com/">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                            <span class="sr-only">Instagram</span>
+                        </a>
                         <a href="https://linkedin.com">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                             <span class="sr-only">Linkedin</span>
@@ -95,7 +194,7 @@
                 <div class="main-header__inner">
                     <div class="main-header__logo logo-retina">
                         <a href="index.html">
-                            <img src="assets/images/logo-Edutrack-remove.png" alt="eduhive HTML" width="209">
+                            <img src="assets/images/logo-Edutrack-remove.png" alt="EduTrack HTML" width="209">
                         </a>
                     </div><!-- /.main-header__logo -->
                     <div class="main-header__right">
@@ -105,9 +204,8 @@
                                 <li>
                                     <a href="index.html">Inicio</a>
                                 </li>
-
                                 <li>
-                                    <a href="about.html">Quienes Somos</a>
+                                    <a href="about.html">Quienes somos</a>
                                 </li>
                                 <li class="dropdown">
                                     <a href="#">Funcionalidades</a>
@@ -160,14 +258,16 @@
                 </div><!-- /.main-header__inner -->
             </div><!-- /.container-fluid -->
         </header><!-- /.main-header -->
+
         <section class="page-header">
             <div class="container">
                 <div class="page-header__content">
                     <ul class="eduhive-breadcrumb list-unstyled">
                         <li><span class="eduhive-breadcrumb__icon"><i class="icon-home"></i></span><a href="index.html">Home</a></li>
-                        <li><span>Regístrate</span></li>
+                        <li><span>Beneficios</span></li>
                     </ul><!-- /.eduhive-breadcrumb list-unstyled -->
-                    <h2 class="page-header__title">Regístrate</h2>
+                    <h2 class="page-header__title">Beneficios de EduTrack</h2>
+                    <p class="page-header__text">Estas son las ventajas que EduTrack aporta a estudiantes, docentes, familias e instituciones educativas.</p>
                 </div><!-- /.page-header__content -->
             </div><!-- /.container -->
             <img src="assets/images/shapes/page-header-shape-1.png" alt="shape" class="page-header__shape-one">
@@ -176,60 +276,100 @@
             <div class="page-header__shape-four"></div><!-- /.page-header__shape-four -->
         </section><!-- /.page-header -->
 
-        <section class="login-page section-space">
+        <section class="courses-page section-space">
             <div class="container">
-                <div class="row gutter-y-50 align-items-center">
-                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
-                        <div class="login-page__image">
-                            <div class="login-page__image__inner">
-                                <img src="assets/images/resources/desercion-escolar2.png" alt="login">
-                            </div><!-- /.login-page__image__inner -->
-                        </div><!-- /.login-page__image -->
-                    </div><!-- /.col-lg-6 -->
-                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
-                        <form class="login-page__form">
-                            <div class="login-page__form__inner">
-                                <div class="login-page__form__top">
-                                    <img src="assets/images/logo-Edutrack-remove.png" alt="logo" width="167" class="login-page__form__logo">
-                                    <h3 class="login-page__form__title">¡Bienvenido! Regístrate para crear tu cuenta</h3>
-                                </div><!-- /.login-page__form__top -->
-                                <div class="login-page__form__wrapp">
-                                    <div class="login-page__form__input-box">
-                                        <label for="login_email_or_phone" class="login-page__form__label">Registrarse</label>
-                                        <input type="text" id="login_email_or_phone" placeholder="Email o número de teléfono">
-                                    </div>
-                                    <div class="login-page__form__input-box">
-                                        <label for="login_password" class="login-page__form__label">Contraseña</label>
-                                        <div class="login-page__form__input-box__inner">
-                                            <input type="password" id="login_password" placeholder="Contraseña" class="toggle-password-input">
-                                            <i class="toggle-password-icon fa fa-fw fa-eye-slash"></i>
-                                        </div>
-                                    </div>
-                                    <div class="login-page__form__input-box login-page__form__input-box--3">
-                                        <label class="login-page__form__checked-box" for="remember-policy">
-                                            <input type="checkbox" name="remember-policy" id="remember-policy">
-                                            <span></span>
-                                            Acepto la política de privacidad de la empresa.
-                                        </label>
-                                    </div>
-                                    <div class="login-page__form__input-box login-page__form__input-box--4">
-                                        <button type="submit" class="login-page__form__btn eduhive-btn eduhive-btn--normal">Registrarse</button>
-                                    </div>
-                                </div><!-- /.login-page__form__wrapp -->
-                                <div class="login-page__form__bottom">
-                                    <button type="button" class="login-page__form__signin-google">
-                                        <img src="assets/images/shapes/google.png" alt="google">
-                                        Iniciar sesión con Google
-                                    </button>
-                                    <p class="login-page__form__register-text">¿Ya tienes una cuenta? <a href="login.html">iniciar sesión</a>
-                                    </p>
-                                </div><!-- /.login-page__form__bottom -->
-                            </div><!-- /.login-page__form__inner -->
-                        </form><!-- /.login-page__form -->
-                    </div><!-- /.col-lg-6 -->
-                </div><!-- /.row gutter-y-50 -->
+                <div class="row gutter-y-30">
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-live-streaming"></i></span>
+                            <h3 class="benefit-card__title">Detección Temprana de Riesgo</h3>
+                            <p class="benefit-card__text">EduTrack analiza continuamente la asistencia, el rendimiento académico y otros indicadores para identificar a tiempo a los estudiantes con riesgo de deserción, permitiendo una intervención preventiva antes de que abandonen sus estudios.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-megaphone"></i></span>
+                            <h3 class="benefit-card__title">Alertas Automáticas en Tiempo Real</h3>
+                            <p class="benefit-card__text">El sistema envía notificaciones automáticas cuando detecta disminuciones en la asistencia, bajo rendimiento académico o cambios relevantes en el comportamiento del estudiante, permitiendo una intervención rápida por parte de docentes y familias.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-comments"></i></span>
+                            <h3 class="benefit-card__title">Comunicación entre Familia y Escuela</h3>
+                            <p class="benefit-card__text">EduTrack mantiene informados a docentes y padres mediante notificaciones oportunas, favoreciendo la comunicación y el seguimiento constante del progreso del estudiante.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-students"></i></span>
+                            <h3 class="benefit-card__title">Seguimiento Personalizado del Estudiante</h3>
+                            <p class="benefit-card__text">EduTrack permite visualizar la evolución de cada estudiante, facilitando el seguimiento de su desempeño y ayudando a brindar un acompañamiento más cercano durante todo el año escolar.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-ranking"></i></span>
+                            <h3 class="benefit-card__title">Toma de Decisiones Basada en Datos</h3>
+                            <p class="benefit-card__text">Los reportes y estadísticas permiten identificar tendencias, priorizar acciones y tomar decisiones oportunas para mejorar el rendimiento y la permanencia de los estudiantes.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-medal"></i></span>
+                            <h3 class="benefit-card__title">Mejora del Rendimiento Académico</h3>
+                            <p class="benefit-card__text">Al detectar necesidades de apoyo de forma temprana, EduTrack contribuye a que los estudiantes fortalezcan su aprendizaje y mejoren su desempeño académico durante el año escolar.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-setting"></i></span>
+                            <h3 class="benefit-card__title">Gestión Escolar Más Eficiente</h3>
+                            <p class="benefit-card__text">EduTrack reúne la información relevante de los estudiantes en un solo lugar, facilitando el seguimiento, la coordinación entre docentes y una gestión educativa más eficiente.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="100ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-clock-1"></i></span>
+                            <h3 class="benefit-card__title">Intervención Oportuna</h3>
+                            <p class="benefit-card__text">EduTrack facilita la identificación temprana de estudiantes en riesgo, permitiendo actuar rápidamente y brindar el apoyo necesario antes de que las dificultades se agraven.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="200ms">
+                        <div class="benefit-card">
+                            <span class="benefit-card__icon"><i class="icon-healthcare"></i></span>
+                            <h3 class="benefit-card__title">Bienestar Integral del Estudiante</h3>
+                            <p class="benefit-card__text">EduTrack promueve un entorno educativo más seguro y participativo, favoreciendo el bienestar, la motivación y el desarrollo integral de cada estudiante.</p>
+                        </div>
+                    </div>
+
+                </div><!-- /.row gutter-y-30 -->
+
+                <div class="benefits-cta wow fadeInUp" data-wow-duration="1200ms" data-wow-delay="0ms">
+                    <span class="benefits-cta__icon"><i class="icon-graduation"></i></span>
+                    <div class="benefits-cta__body">
+                        <h3>¿Quieres conocer EduTrack en acción?</h3>
+                        <p>Conversemos sobre cómo estos beneficios pueden aplicarse en tu institución educativa.</p>
+                    </div>
+                    <a href="contact.html" class="eduhive-btn eduhive-btn--normal">
+                        <span>Contactar al equipo</span>
+                        <span class="eduhive-btn__icon">
+                            <span class="eduhive-btn__icon__inner"><i class="icon-right-arrow"></i></span>
+                        </span>
+                    </a>
+                </div><!-- /.benefits-cta -->
+
             </div><!-- /.container -->
-        </section><!-- /.login-page section-space -->
+        </section><!-- /.courses-page section-space -->
 
         <footer class="main-footer section-space-top">
             <div class="container">
@@ -244,7 +384,7 @@
                                 </li>
                                 <li>
                                     <span class="footer-widget__info__icon"><i class="icon-email"></i></span>
-                                    <a href="mailto:needhelp@company.com">soporte@edutrack.edu.pe</a>
+                                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
                                 </li>
                                 <li>
                                     <span class="footer-widget__info__icon"><i class="icon-telephone"></i></span>
@@ -350,11 +490,9 @@
                     <div class="col-xl-3 col-md-4 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="300ms">
                         <div class="footer-widget footer-widget--gallery">
                             <h2 class="footer-widget__title">Síguenos</h2><!-- /.footer-widget__title -->
-                            <!-- TEXTO NUEVO -->
                             <p class="footer-widget__text">
                                 Conecta con nosotros y conoce más sobre el proyecto Edutrack
                             </p>
-                            <!-- ICONOS REDES SOCIALES -->
                             <div class="footer-widget__social-icons">
                                 <a href="https://facebook.com" target="_blank" class="social-icon">
                                     <i class="fab fa-facebook-f"></i>
@@ -397,18 +535,18 @@
             <span class="mobile-nav__close mobile-nav__toggler"><i class="icon-close"></i></span>
             <div class="logo-box logo-retina">
                 <a href="index.html" aria-label="logo image">
-                    <img src="assets/images/logo-light.png" width="209" alt="" />
+                    <img src="assets/images/logo-Edutrack-white.png" width="209" alt="" />
                 </a>
             </div><!-- /.logo-box -->
             <div class="mobile-nav__container"></div><!-- /.mobile-nav__container -->
             <ul class="mobile-nav__contact list-unstyled">
                 <li>
                     <span class="mobile-nav__contact__icon"><i class="fa fa-envelope"></i></span>
-                    <a href="mailto:soporte@Edutrack.edu.pe">soporte@Edutrack.edu.pe</a>
+                    <a href="mailto:soporte@edutrack.edu.pe">soporte@edutrack.edu.pe</a>
                 </li>
                 <li>
                     <span class="mobile-nav__contact__icon"><i class="fa fa-phone-alt"></i></span>
-                    <a href="tel:+9156980036420">+91 5698 0036 420</a>
+                    <a href="tel:+51 4726516">+51 4726516</a>
                 </li>
             </ul><!-- /.mobile-nav__contact -->
             <div class="mobile-nav__social social-links-two">
