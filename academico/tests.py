@@ -2073,3 +2073,77 @@ class AsistenciaFechaValidacionTests(TestCase):
             estado=Asistencia.Estado.PRESENTE,
         )
         asistencia.full_clean()
+
+class ReporteMineduTests(TestCase):
+    def setUp(self):
+        self.institucion = Institucion.objects.create(nombre="IE Nacional Test", codigo="IE-N01")
+        self.minedu_user = CustomUser.objects.create_user(
+            email="minedu3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="30303030",
+            rol=CustomUser.Rol.MINEDU,
+        )
+        self.grado = Grado.objects.create(
+            institucion=self.institucion,
+            nivel=Grado.Nivel.SECUNDARIA,
+            nombre="1ro",
+            seccion="A",
+            anio_academico=2026,
+        )
+
+        self.alumnos = []
+        for i in range(4):
+            alumno = Alumno.objects.create(
+                institucion=self.institucion,
+                dni=f"4000000{i}",
+                nombres=f"Alumno{i}",
+                apellidos="Test",
+                fecha_nacimiento="2011-01-01",
+            )
+            Matricula.objects.create(institucion=self.institucion, alumno=alumno, grado=self.grado)
+            self.alumnos.append(alumno)
+
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumnos[0],
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.ALTO,
+            descripcion="Riesgo alto de prueba",
+        )
+        Alerta.objects.create(
+            institucion=self.institucion,
+            alumno=self.alumnos[1],
+            tipo=Alerta.Tipo.RENDIMIENTO,
+            nivel_riesgo=Alerta.NivelRiesgo.MEDIO,
+            descripcion="Riesgo medio de prueba",
+        )
+
+        self.client.force_login(self.minedu_user)
+
+    def test_calcula_porcentajes_y_riesgo_final(self):
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        self.assertEqual(response.status_code, 200)
+        fila = response.context["filas"][0]
+
+        self.assertEqual(fila["total"], 4)
+        self.assertEqual(fila["alto"], 1)
+        self.assertEqual(fila["medio"], 1)
+        self.assertEqual(fila["bajo"], 2)
+        # riesgo_final = (1*1 + 1*2) / (4*2) * 100 = 37.5
+        self.assertAlmostEqual(fila["riesgo_final_pct"], 37.5)
+        self.assertEqual(fila["riesgo_final_nivel"], Alerta.NivelRiesgo.MEDIO)
+
+    def test_director_no_puede_ver_reporte_nacional(self):
+        director = CustomUser.objects.create_user(
+            email="director3@edutrack.test",
+            password="ClaveSegura!2026",
+            dni="88887777",
+            rol=CustomUser.Rol.DIRECTOR,
+            institucion=self.institucion,
+        )
+        self.client.force_login(director)
+
+        response = self.client.get(reverse("academico:reporte_minedu"))
+
+        self.assertEqual(response.status_code, 403)

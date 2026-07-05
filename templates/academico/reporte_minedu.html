@@ -1,5 +1,4 @@
-Pega esto en templates/academico/reporte_minedu.html:
-html{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block contenido %}
 <div class="page-title-head d-flex align-items-center gap-2">
@@ -56,19 +55,29 @@ html{% extends "base.html" %}
                     <th>Medio</th>
                     <th>Alto</th>
                     <th>Total</th>
+                    <th>Riesgo final</th>
                 </tr>
             </thead>
             <tbody>
                 {% for fila in filas %}
                 <tr>
                     <td>{{ fila.institucion.nombre }}</td>
-                    <td><span class="badge bg-success-subtle text-success">{{ fila.bajo }}</span></td>
-                    <td><span class="badge bg-warning-subtle text-warning">{{ fila.medio }}</span></td>
-                    <td><span class="badge bg-danger-subtle text-danger">{{ fila.alto }}</span></td>
+                    <td><span class="badge bg-success-subtle text-success">{{ fila.bajo_pct|floatformat:1 }}%</span></td>
+                    <td><span class="badge bg-warning-subtle text-warning">{{ fila.medio_pct|floatformat:1 }}%</span></td>
+                    <td><span class="badge bg-danger-subtle text-danger">{{ fila.alto_pct|floatformat:1 }}%</span></td>
                     <td>{{ fila.total }}</td>
+                    <td>
+                        {% if fila.riesgo_final_nivel == "ALTO" %}
+                        <span class="badge bg-danger-subtle text-danger">{{ fila.riesgo_final_pct|floatformat:1 }}% - Alto</span>
+                        {% elif fila.riesgo_final_nivel == "MEDIO" %}
+                        <span class="badge bg-warning-subtle text-warning">{{ fila.riesgo_final_pct|floatformat:1 }}% - Medio</span>
+                        {% else %}
+                        <span class="badge bg-success-subtle text-success">{{ fila.riesgo_final_pct|floatformat:1 }}% - Bajo</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center text-muted py-4">No hay instituciones activas registradas.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-4">No hay instituciones activas registradas.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

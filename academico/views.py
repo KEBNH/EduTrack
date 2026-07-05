@@ -723,13 +723,35 @@ def reporte_minedu(request):
             else:
                 bajo += 1
 
+        total = bajo + medio + alto
+
+        if total > 0:
+            bajo_pct = bajo / total * 100
+            medio_pct = medio / total * 100
+            alto_pct = alto / total * 100
+            riesgo_final_pct = (medio * 1 + alto * 2) / (total * 2) * 100
+        else:
+            bajo_pct = medio_pct = alto_pct = riesgo_final_pct = 0
+
+        if riesgo_final_pct >= 50:
+            riesgo_final_nivel = Alerta.NivelRiesgo.ALTO
+        elif riesgo_final_pct >= 25:
+            riesgo_final_nivel = Alerta.NivelRiesgo.MEDIO
+        else:
+            riesgo_final_nivel = Alerta.NivelRiesgo.BAJO
+
         filas.append(
             {
                 "institucion": institucion,
                 "bajo": bajo,
                 "medio": medio,
                 "alto": alto,
-                "total": bajo + medio + alto,
+                "total": total,
+                "bajo_pct": bajo_pct,
+                "medio_pct": medio_pct,
+                "alto_pct": alto_pct,
+                "riesgo_final_pct": riesgo_final_pct,
+                "riesgo_final_nivel": riesgo_final_nivel,
             }
         )
         total_bajo += bajo
