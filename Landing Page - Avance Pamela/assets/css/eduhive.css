@@ -16347,3 +16347,88 @@ body.boxed-wrapper .main-footer__shape-five {
   }
 }
 /*# sourceMappingURL=eduhive.css.map */
+.footer-widget__social-icons {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.footer-widget__social-icons .social-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: white;
+    color: #5a4bff;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+/* separación visual + hover */
+.footer-widget__social-icons .social-icon:hover {
+    transform: translateY(-5px);
+    background: #5a4bff;
+    color: white;
+}
+
+.main-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* LOGO NO SE TOCA */
+.main-header__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* MENÚ CENTRADO */
+.main-menu {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* EVITA QUE SE ROMPA EL HEADER */
+.main-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* CENTRAR MENÚ DE VERDAD */
+.main-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+    flex: 1;
+}
+
+/* LOGO FIJO IZQUIERDA */
+.main-header__logo {
+    flex: 0 0 auto;
+}
+
+/* BOTONES DERECHA */
+.header-icons,
+.main-header__right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
