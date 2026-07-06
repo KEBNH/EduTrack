@@ -1,16 +1,15 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
+﻿<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contáctanos | EduTrack</title>
+    <title>Preguntas Frecuentes | Edutrack </title>
     <!-- favicons Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'landing/assets/images/favicons/apple-touch-icon.png' %}" />
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'landing/assets/images/favicons/favicon-32x32.png' %}" />
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'landing/assets/images/favicons/favicon-16x16.png' %}" />
-    <link rel="manifest" href="{% static 'landing/assets/images/favicons/site.webmanifest' %}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/landing/assets/images/favicons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/landing/assets/images/favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/landing/assets/images/favicons/favicon-16x16.png" />
+    <link rel="manifest" href="/static/landing/assets/images/favicons/site.webmanifest" />
     <meta name="description" content="Eduhive is a very modern and versatile education & online courses HTML Template. It is specially designed for LMS, online courses, education, learning management, e-learning, online training, zoom classes, and all other education related websites and businesses." />
 
     <!-- fonts -->
@@ -18,22 +17,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap/css/bootstrap.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/animate/animate.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/fontawesome/css/all.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jarallax/jarallax.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/nouislider/nouislider.pips.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/eduhive-icons/style.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.carousel.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'landing/assets/vendors/owl-carousel/css/owl.theme.default.min.css' %}" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/bootstrap-select/bootstrap-select.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/animate/animate.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/jquery-ui/jquery-ui.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/jarallax/jarallax.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/nouislider/nouislider.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/nouislider/nouislider.pips.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/tiny-slider/tiny-slider.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/eduhive-icons/style.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/owl-carousel/css/owl.carousel.min.css" />
+    <link rel="stylesheet" href="/static/landing/assets/vendors/owl-carousel/css/owl.theme.default.min.css" />
 
     <!-- template styles -->
-    <link rel="stylesheet" href="{% static 'landing/assets/css/eduhive.css' %}" />
+    <link rel="stylesheet" href="/static/landing/assets/css/eduhive.css" />
 </head>
 
 <body class="custom-cursor">
@@ -42,7 +41,7 @@
     <div class="custom-cursor__cursor-two"></div>
 
     <div class="preloader">
-        <div class="preloader__image" style="background-image: url(assets/images/loader.png);"></div>
+        <div class="preloader__image" style="background-image: url(/static/landing/assets/images/loader.png);"></div>
     </div>
     <!-- /.preloader -->
     <div class="page-wrapper">
@@ -95,8 +94,8 @@
             <div class="container-fluid">
                 <div class="main-header__inner">
                     <div class="main-header__logo logo-retina">
-                        <a href="{% url 'landing' %}">
-                            <img src="{% static 'landing/assets/images/logo-Edutrack-remove.png' %}" alt="eduhive HTML" width="209">
+                        <a href="/">
+                            <img src="/static/landing/assets/images/logo-Edutrack-remove.png" alt="eduhive HTML" width="209">
                         </a>
                     </div><!-- /.main-header__logo -->
                     <div class="main-header__right">
@@ -105,27 +104,27 @@
 
 
                                 <li>
-                                    <a href="{% url 'landing' %}">Inicio</a>
+                                    <a href="/">Inicio</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_about' %}">Quienes somos</a>
+                                    <a href="/nosotros/">Quienes somos</a>
                                 </li>
                                 <li class="dropdown">
                                     <a href="#">Funcionalidades</a>
                                     <ul>
-                                        <li><a href="{% url 'landing_functionalities' %}">Funcionalidades principales</a></li>
-                                        <li><a href="{% url 'accounts:login' %}">Log In</a></li>
+                                        <li><a href="instructors.html">Funcionalidades principales</a></li>
+                                        <li><a href="login.html">Log In</a></li>
                                         <li><a href="404.html">404 Error</a></li>
                                     </ul>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_benefits' %}">Beneficios</a>
+                                    <a href="courses.html">Beneficios</a>
                                 </li>
                                 <li>
-                                    <a href="products.html">Preguntas Frecuentes</a>
+                                    <a href="/products.html">Preguntas Frecuentes</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_contact' %}">Contacto</a>
+                                    <a href="/contacto/">Contacto</a>
                                 </li>
                             </ul>
                         </nav><!-- /.main-header__nav -->
@@ -148,109 +147,120 @@
                 </div><!-- /.main-header__inner -->
             </div><!-- /.container-fluid -->
         </header><!-- /.main-header -->
-
+        
         <section class="page-header">
             <div class="container">
                 <div class="page-header__content">
                     <ul class="eduhive-breadcrumb list-unstyled">
-                        <li><span class="eduhive-breadcrumb__icon"><i class="icon-home"></i></span><a href="{% url 'landing' %}">Home</a></li>
-                        <li><span>Contacto</span></li>
+                        <li><span class="eduhive-breadcrumb__icon"><i class="icon-home"></i></span><a href="/">Home</a></li>
+                        <li><span>Preguntas Frecuentes</span></li>
                     </ul><!-- /.eduhive-breadcrumb list-unstyled -->
-                    <h2 class="page-header__title">¡Contáctanos!</h2>
+                    <h2 class="page-header__title">Preguntas Frecuentes</h2>
                 </div><!-- /.page-header__content -->
             </div><!-- /.container -->
-            <img src="{% static 'landing/assets/images/shapes/page-header-shape-1.png' %}" alt="shape" class="page-header__shape-one">
-            <img src="{% static 'landing/assets/images/shapes/page-header-shape-2.png' %}" alt="shape" class="page-header__shape-two">
+            <img src="/static/landing/assets/images/shapes/page-header-shape-1.png" alt="shape" class="page-header__shape-one">
+            <img src="/static/landing/assets/images/shapes/page-header-shape-2.png" alt="shape" class="page-header__shape-two">
             <div class="page-header__shape-three"></div><!-- /.page-header__shape-three -->
             <div class="page-header__shape-four"></div><!-- /.page-header__shape-four -->
         </section><!-- /.page-header -->
 
-        <section class="contact-page section-space">
+        <section class="faq-page-search section-space-bottom">
             <div class="container">
-                <div class="row gutter-y-40">
-                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
-                        <div class="contact-page__content">
-                            <div class="contact-page__content__bg" style="background-image: url(assets/images/shapes/contact-form-bg-1-1.png);"></div>
-                            <!-- /.contact-page__content__bg -->
-                            <div class="contact-page__content__inner">
-                                <div class="sec-title">
-                                    <h6 class="sec-title__tagline">ponte en contacto</h6><!-- /.sec-title__tagline -->
-                                    <h3 class="sec-title__title">¡Escribenos <span>ahora!</span></h3><!-- /.sec-title__title -->
-                                </div><!-- /.sec-title -->
-                                <ul class="list-unstyled contact-page__info">
-                                    <li>
-                                        <div class="contact-page__info__icon">
-                                            <span class="contact-page__info__icon__inner">
-                                                <i class="icon-telephone"></i>
-                                            </span><!-- /.contact-page__info__icon__inner -->
-                                        </div><!-- /.contact-page__info__icon -->
-                                        <div class="contact-page__info__content">
-                                            <h3 class="contact-page__info__title">Llama ahora</h3>
-                                            <a href="tel:+51 4726516" class="contact-page__info__text">+51 4726516</a>
-                                        </div><!-- /.contact-page__info__content -->
-                                    </li>
-                                    <li>
-                                        <div class="contact-page__info__icon">
-                                            <span class="contact-page__info__icon__inner">
-                                                <i class="icon-paper-plane"></i>
-                                            </span><!-- /.contact-page__info__icon__inner -->
-                                        </div><!-- /.contact-page__info__icon -->
-                                        <div class="contact-page__info__content">
-                                            <h3 class="contact-page__info__title">Email</h3>
-                                            <a href="mailto:soporte@edutrack.edu.pe" class="contact-page__info__text contact-page__info__text--email">soporte@EduTrack.edu.pe</a>
-                                        </div><!-- /.contact-page__info__content -->
-                                    </li>
-                                    <li>
-                                        <div class="contact-page__info__icon">
-                                            <span class="contact-page__info__icon__inner">
-                                                <i class="icon-location"></i>
-                                            </span><!-- /.contact-page__info__icon__inner -->
-                                        </div><!-- /.contact-page__info__icon -->
-                                        <div class="contact-page__info__content">
-                                            <h3 class="contact-page__info__title">Dirección</h3>
-                                            <a href="https://www.google.com/maps" class="contact-page__info__text">Av. de la Marina 2810, San Miguel</a>
-                                        </div><!-- /.contact-page__info__content -->
-                                    </li>
-                                </ul><!-- /.list-unstyled -->
-                            </div><!-- /.contact-page__content__inner -->
-                        </div><!-- /.contact-page__content -->
-                    </div><!-- /.col-lg-6 -->
-                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
-                        <form class="contact-page__form contact-form-validated form-one" action="inc/sendemail.php">
-                            <div class="form-one__group">
-                                <div class="form-one__control form-one__control--full">
-                                    <input type="text" name="name" placeholder="Nombre Completo">
-                                </div><!-- /.form-one__control form-one__control--full -->
-                                <div class="form-one__control form-one__control--full">
-                                    <input type="email" name="email" placeholder="Correo Electrónico">
-                                </div><!-- /.form-one__control form-one__control--full -->
-                                <div class="form-one__control form-one__control--full">
-                                    <input type="tel" name="tel" placeholder="Número de teléfono">
-                                </div><!-- /.form-one__control form-one__control--full -->
-                                <div class="form-one__control form-one__control--full">
-                                    <textarea name="message" placeholder="Déjanos tus dudas o comentarios aquí. . ."></textarea><!-- /# -->
-                                </div><!-- /.form-one__control -->
-                                <div class="form-one__control form-one__control--full">
-                                    <button type="submit" class="eduhive-btn">
-                                        <span>Enviar mensaje</span>
-                                        <span class="eduhive-btn__icon"><i class="icon-right-up"></i></span>
-                                    </button>
-                                </div><!-- /.form-one__control -->
-                            </div><!-- /.form-one__group -->
-                        </form><!-- /.contact-page__form -->
-                    </div><!-- /.col-lg-6 -->
-                </div><!-- /.row gutter-y-40 -->
+                <div class="faq-page-search__content wow fadeInUp" data-wow-duration="1500ms">
+                    <h2 class="faq-page-search__title">¿En qué podemos ayudarte?</h2>
+                    <!-- /.faq-page-search__title -->
+                    <form action="#" class="faq-page-search__form">
+                        <input type="text" id="error-search" placeholder="Escribe tu pregunta o palabra clave..." />
+                        <button type="submit" class="faq-page-search__form__btn" aria-label="search submit">
+                            <i class="icon-search"></i>
+                        </button>
+                    </form><!-- /.faq-page-search__form -->
+                </div><!-- /.faq-page-search__content -->
             </div><!-- /.container -->
-        </section><!-- /.contact-page section-space -->
+        </section><!-- /.faq-page-search section-space-bottom -->
 
-        <section class="contact-map">
-            <div class="container-fluid">
-                <div class="google-map google-map__contact">
-                    <iframe title="template google map" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3901.513511887916!2d-77.0934646!3d-12.076957!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c9652ee6b21b%3A0xecd0c7ecf135af76!2sAv.%20de%20la%20Marina%202810%2C%20San%20Miguel%2015087!5e0!3m2!1ses-419!2spe!4v1783203213866!5m2!1ses-419!2spe" class="map__contact" allowfullscreen></iframe>
-                </div>
-                <!-- /.google-map -->
-            </div><!-- /.container-fluid -->
-        </section><!-- /.contact-map -->
+        <section class="faq-page section-space">
+            <div class="container">
+                <div class="row gutter-y-50">
+                    <div class="col-lg-6 wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                        <div class="faq-page__image">
+                            <img src="/static/landing/assets/images/faq/Preguntas.png" alt="faq">
+                        </div><!-- /.faq-page__image -->
+                    </div><!-- /.col-lg-6 -->
+                    <div class="col-lg-6">
+                        <div class="faq-page__accordion">
+                            <div class="faq-accordion eduhive-accordion" data-grp-name="eduhive-accordion">
+                                <div class="accordion wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="00ms">
+                                    <div class="accordion-title">
+                                        <h4>
+                                            ¿Qué es EduTrack y a quién está dirigido?
+                                            <span class="accordion-title__icon"></span><!-- /.accordion-title__icon -->
+                                        </h4>
+                                    </div><!-- /.accordion-title -->
+                                    <div class="accordion-content">
+                                        <div class="inner">
+                                            <p> Es una plataforma de gestión escolar y alerta temprana diseñada para instituciones educativas. Ayuda a directivos, docentes y coordinadores a realizar un seguimiento integral del rendimiento académico y la asistencia de los estudiantes.</p>
+                                        </div><!-- /.inner -->
+                                    </div><!-- /.accordion-content -->
+                                </div><!-- /.accordion-item -->
+                                <div class="accordion wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="50ms">
+                                    <div class="accordion-title">
+                                        <h4>
+                                            ¿Cómo detecta el sistema a un estudiante en situación de riesgo?
+                                            <span class="accordion-title__icon"></span><!-- /.accordion-title__icon -->
+                                        </h4>
+                                    </div><!-- /.accordion-title -->
+                                    <div class="accordion-content">
+                                        <div class="inner">
+                                            <p>La plataforma evalúa automáticamente indicadores clave como bajas calificaciones, cambios drásticos en el promedio o acumulación de faltas. Si un alumno cruza los límites establecidos, el sistema genera una alerta preventiva para intervenir a tiempo.</p>
+                                        </div><!-- /.inner -->
+                                    </div><!-- /.accordion-content -->
+                                </div><!-- /.accordion-item -->
+                                <div class="accordion active wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="100ms">
+                                    <div class="accordion-title">
+                                        <h4>
+                                            ¿Los padres de familia pueden ver el estado de sus hijos?
+                                            <span class="accordion-title__icon"></span><!-- /.accordion-title__icon -->
+                                        </h4>
+                                    </div><!-- /.accordion-title -->
+                                    <div class="accordion-content">
+                                        <div class="inner">
+                                            <p>Sí, EduTrack cuenta con un módulo de consultas diseñado para que los padres o apoderados puedan visualizar las asistencias, reportes de notas y alertas vigentes asignadas a sus hijos en tiempo real.</p>
+                                        </div><!-- /.inner -->
+                                    </div><!-- /.accordion-content -->
+                                </div><!-- /.accordion-item -->
+                                <div class="accordion wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="150ms">
+                                    <div class="accordion-title">
+                                        <h4>
+                                            ¿Cómo se garantiza la seguridad de los datos escolares?
+                                            <span class="accordion-title__icon"></span><!-- /.accordion-title__icon -->
+                                        </h4>
+                                    </div><!-- /.accordion-title -->
+                                    <div class="accordion-content">
+                                        <div class="inner">
+                                            <p>Implementamos altos estándares de seguridad y cifrado de datos para asegurar que toda la información confidencial de la institución, los docentes y los alumnos permanezca completamente protegida y privada.</p>
+                                        </div><!-- /.inner -->
+                                    </div><!-- /.accordion-content -->
+                                </div><!-- /.accordion-item -->
+                                <div class="accordion wow fadeInUp" data-wow-duration="1500ms" data-wow-delay="200ms">
+                                    <div class="accordion-title">
+                                        <h4>
+                                            ¿El sistema se puede adaptar a los criterios de nuestro colegio?
+                                            <span class="accordion-title__icon"></span><!-- /.accordion-title__icon -->
+                                        </h4>
+                                    </div><!-- /.accordion-title -->
+                                    <div class="accordion-content">
+                                        <div class="inner">
+                                            <p>Por supuesto. Los parámetros para disparar las alertas preventivas (como el promedio mínimo o el porcentaje de inasistencias permitido) son totalmente configurables según el reglamento interno de cada plantel escolar.</p>
+                                        </div><!-- /.inner -->
+                                    </div><!-- /.accordion-content -->
+                                </div><!-- /.accordion-item -->
+                            </div><!-- /.faq-accordion -->
+                        </div><!-- /.faq-page__accordion -->
+                    </div><!-- /.col-lg-6 -->
+                </div><!-- /.row gutter-y-50 -->
+            </div><!-- /.container -->
+        </section><!-- /.faq-page section-space -->
 
         <footer class="main-footer section-space-top">
             <div class="container">
@@ -279,7 +289,7 @@
                             <h2 class="footer-widget__title">Menú</h2><!-- /.footer-widget__title -->
                             <ul class="list-unstyled footer-widget__links">
                                 <li>
-                                    <a href="{% url 'landing' %}">
+                                    <a href="/">
                                         <span class="footer-widget__links__icon">
                                             <i class="icon-double-arrow"></i>
                                         </span>
@@ -287,7 +297,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_about' %}">
+                                    <a href="/nosotros/">
                                         <span class="footer-widget__links__icon">
                                             <i class="icon-double-arrow"></i>
                                         </span>
@@ -295,7 +305,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_functionalities' %}">
+                                    <a href="instructors.html">
                                         <span class="footer-widget__links__icon">
                                             <i class="icon-double-arrow"></i>
                                         </span>
@@ -303,7 +313,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'landing_benefits' %}">
+                                    <a href="courses.html">
                                         <span class="footer-widget__links__icon">
                                             <i class="icon-double-arrow"></i>
                                         </span>
@@ -311,7 +321,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="products.html">
+                                    <a href="/products.html">
                                         <span class="footer-widget__links__icon">
                                             <i class="icon-double-arrow"></i>
                                         </span>
@@ -398,16 +408,16 @@
                 <div class="container">
                     <div class="main-footer__bottom__inner">
                         <p class="main-footer__copyright">
-                            &copy; Copyright <span class="dynamic-year"></span> by Edutrack
+                            &copy; Copyright <span class="dynamic-year"></span> by Edutrack HTML Template.
                         </p>
                     </div><!-- /.main-footer__inner -->
                 </div><!-- /.container -->
             </div><!-- /.main-footer__bottom -->
-            <img src="{% static 'landing/assets/images/shapes/footer-shape-1.png' %}" alt="shape" class="main-footer__shape-one">
-            <img src="{% static 'landing/assets/images/shapes/footer-shape-2.png' %}" alt="shape" class="main-footer__shape-two">
-            <img src="{% static 'landing/assets/images/shapes/footer-shape-3.png' %}" alt="shape" class="main-footer__shape-three">
-            <img src="{% static 'landing/assets/images/shapes/footer-shape-4.png' %}" alt="shape" class="main-footer__shape-four">
-            <img src="{% static 'landing/assets/images/shapes/footer-shape-5.png' %}" alt="shape" class="main-footer__shape-five">
+            <img src="/static/landing/assets/images/shapes/footer-shape-1.png" alt="shape" class="main-footer__shape-one">
+            <img src="/static/landing/assets/images/shapes/footer-shape-2.png" alt="shape" class="main-footer__shape-two">
+            <img src="/static/landing/assets/images/shapes/footer-shape-3.png" alt="shape" class="main-footer__shape-three">
+            <img src="/static/landing/assets/images/shapes/footer-shape-4.png" alt="shape" class="main-footer__shape-four">
+            <img src="/static/landing/assets/images/shapes/footer-shape-5.png" alt="shape" class="main-footer__shape-five">
         </footer><!-- /.main-footer section-space-top -->
 
     </div><!-- /.page-wrapper -->
@@ -417,8 +427,8 @@
         <div class="mobile-nav__content">
             <span class="mobile-nav__close mobile-nav__toggler"><i class="icon-close"></i></span>
             <div class="logo-box logo-retina">
-                <a href="{% url 'landing' %}" aria-label="logo image">
-                    <img src="{% static 'landing/assets/images/logo-light.png' %}" width="209" alt="" />
+                <a href="/" aria-label="logo image">
+                    <img src="/static/landing/assets/images/logo-Edutrack-white.png" width="209" alt="" />
                 </a>
             </div><!-- /.logo-box -->
             <div class="mobile-nav__container"></div><!-- /.mobile-nav__container -->
@@ -480,30 +490,30 @@
         <span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span>
     </a>
 
-    <script src="{% static 'landing/assets/vendors/jquery/jquery-3.7.0.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/bootstrap-select/bootstrap-select.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jarallax/jarallax.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-ui/jquery-ui.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-ajaxchimp/jquery.ajaxchimp.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-appear/jquery.appear.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-circle-progress/jquery.circle-progress.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-validate/jquery.validate.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/nouislider/nouislider.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/tiny-slider/tiny-slider.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/wnumb/wNumb.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owl.carousel.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-filter.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/owl-carousel/js/owlcarousel2-progressbar.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/wow/wow.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/imagesloaded/imagesloaded.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/isotope/isotope.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/countdown/countdown.min.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-circleType/jquery.circleType.js' %}"></script>
-    <script src="{% static 'landing/assets/vendors/jquery-lettering/jquery.lettering.min.js' %}"></script>
+    <script src="/static/landing/assets/vendors/jquery/jquery-3.7.0.min.js"></script>
+    <script src="/static/landing/assets/vendors/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/landing/assets/vendors/bootstrap-select/bootstrap-select.min.js"></script>
+    <script src="/static/landing/assets/vendors/jarallax/jarallax.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-ui/jquery-ui.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-ajaxchimp/jquery.ajaxchimp.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-appear/jquery.appear.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-circle-progress/jquery.circle-progress.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-magnific-popup/jquery.magnific-popup.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-validate/jquery.validate.min.js"></script>
+    <script src="/static/landing/assets/vendors/nouislider/nouislider.min.js"></script>
+    <script src="/static/landing/assets/vendors/tiny-slider/tiny-slider.js"></script>
+    <script src="/static/landing/assets/vendors/wnumb/wNumb.min.js"></script>
+    <script src="/static/landing/assets/vendors/owl-carousel/js/owl.carousel.min.js"></script>
+    <script src="/static/landing/assets/vendors/owl-carousel/js/owlcarousel2-filter.min.js"></script>
+    <script src="/static/landing/assets/vendors/owl-carousel/js/owlcarousel2-progressbar.js"></script>
+    <script src="/static/landing/assets/vendors/wow/wow.js"></script>
+    <script src="/static/landing/assets/vendors/imagesloaded/imagesloaded.min.js"></script>
+    <script src="/static/landing/assets/vendors/isotope/isotope.js"></script>
+    <script src="/static/landing/assets/vendors/countdown/countdown.min.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-circleType/jquery.circleType.js"></script>
+    <script src="/static/landing/assets/vendors/jquery-lettering/jquery.lettering.min.js"></script>
     <!-- template js -->
-    <script src="{% static 'landing/assets/js/eduhive.js' %}"></script>
+    <script src="/static/landing/assets/js/eduhive.js"></script>
 </body>
 
 </html>
